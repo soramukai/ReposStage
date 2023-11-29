@@ -1,0 +1,7 @@
+{
+    "type": "sqlite",
+    "database": "./src/renderer/src/db/inventaireDB.db",
+    "entities": ["./src/entity/*.ts"],
+    "synchronize": true,
+    "logging": true
+  }
