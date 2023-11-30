@@ -25,8 +25,8 @@ export default {
   <div>
     <!-- <Versions /> -->
     <!-- <Inventaire /> -->
-    <!-- <VideoSelect /> -->
-    <SrtTest />
+    <VideoSelect />
+    <!-- <SrtTest /> -->
     <p></p>
   </div>
 </template>
