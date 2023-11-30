@@ -2,8 +2,9 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png';
-import IPCs from './IPCs';
-import exec from 'child_process'
+import IPCsInventory from './IPC/IPCsInventory';
+import IPCsFfmpeg from './IPC/IPCsFfmpeg';
+import IPCsSubtitle from './IPC/IPCsSubtitles';
 
 function createWindow(): void {
   // Create the browser window.
@@ -18,6 +19,14 @@ function createWindow(): void {
       sandbox: false,
     }
   })
+
+  mainWindow.webContents.on('before-input-event', (_, input) => {
+    if (input.type === 'keyDown' && input.key === 'F12') {
+      mainWindow.webContents.isDevToolsOpened()
+        ? mainWindow.webContents.closeDevTools()
+        : mainWindow.webContents.openDevTools({ mode: 'bottom' });
+    }
+});
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -58,7 +67,9 @@ app.whenReady().then(() => {
 
 
   createWindow()
-  IPCs.initialize()
+  IPCsInventory.initialize()
+  IPCsFfmpeg.initialize()
+  IPCsSubtitle.initialize()
 
 
   app.on('activate', function () {

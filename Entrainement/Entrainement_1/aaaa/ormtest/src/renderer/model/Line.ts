@@ -1,21 +1,23 @@
 class Line{
-    id
-    timecodeDebut
-    timecodeFin
+    ordre
+    video
+    timecode_debut
+    timecode_fin
     texte
-    constructor(_line){
-        this.id=""
-        this.timecodeDebut=""
-        this.timecodeFin=""
+    constructor(_line,_video){
+        this.ordre=""
+        this.video=_video
+        this.timecode_debut=""
+        this.timecode_fin=""
         this.texte=""
         this.formatedLine(_line)
     }
     formatedLine(_line){
         let line = _line.split('\n');
-        this.id=line[0]
+        this.ordre=line[0]
         let tc = line[1].split('-->')
-        this.timecodeDebut = tc[0]
-        this.timecodeFin = tc[1]
+        this.timecode_debut = tc[0]
+        this.timecode_fin = tc[1]
         this.texte = this.checkText(line)
     }
     checkText(_text){
