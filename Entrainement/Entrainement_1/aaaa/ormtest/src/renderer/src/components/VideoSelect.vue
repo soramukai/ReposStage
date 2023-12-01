@@ -16,7 +16,8 @@
       <p>Timecode actuel : {{ formatTime(currentTime) }}</p>
     </div> -->
     <div>
-      {{ currentSubtitle }}
+    <input id="zoneSubtitle" type="text" :value="currentSubtitle">
+    <button id="buttonUpdate" @click="updateSubtitle" disabled>Update</button>
     </div>
       <div id="menu">   
       
@@ -51,9 +52,11 @@ export default {
         });
         if(this.currentLine.length>0){
           this.currentSubtitle=this.currentLine[0]["texte"]
+          document.getElementById("buttonUpdate").disabled=false;
         }
         else{
           this.currentSubtitle=""
+          document.getElementById("buttonUpdate").disabled=true;
         }
     },
     formatedTimecode(_timecodeString){
@@ -77,11 +80,19 @@ export default {
     },
     convertVideo() {
       window.electron.ipcRenderer.send('electron:SendVideo', this.file.path);
-    },
-  },
+    }  
+    ,
+    updateSubtitle() {
+      this.currentLine[0]["texte"]=document.getElementById("zoneSubtitle").value;
+      let jsonObject = JSON.stringify(this.currentLine)
+
+      window.electron.ipcRenderer.send('subtitle:UpdateData',jsonObject,this.currentLine[0]["id"])
+    }
+  }
+  ,
   async mounted() {
     this.subtitles = JSON.parse(await window.electron.ipcRenderer.invoke('subtitle:LoadData'))
-
+    console.log(this.subtitles)
     document.getElementById("videoFile").src=this.videoFilePath+"converti.mp4"
     window.electron.ipcRenderer.on('electron:progressPercent', (event, progress) => {
       this.conversionProgress = progress;
@@ -97,6 +108,10 @@ export default {
 <style scoped>
 #cadre{
   border: 3px solid gray;
+}
+#zoneSubtitle{ 
+  width: 30%;
+  overflow-block: auto;
 }
 .progress-container {
   text-align: center;

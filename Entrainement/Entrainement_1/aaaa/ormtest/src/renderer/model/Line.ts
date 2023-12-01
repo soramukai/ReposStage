@@ -1,4 +1,5 @@
 class Line{
+    id
     ordre
     video
     timecode_debut

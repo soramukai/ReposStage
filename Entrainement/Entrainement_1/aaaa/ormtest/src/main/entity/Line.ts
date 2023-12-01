@@ -35,7 +35,7 @@ dataSource.initialize().catch(error => console.error("Erreur lors de l'initialis
 export const saveData = async (_json: JSON) => {
     try {
         const repository = dataSource.getRepository(Line);
-
+        
         const line = new Line();
         let jsonObj = JSON.parse(_json);
         line.ordre = jsonObj["ordre"];
@@ -55,15 +55,15 @@ export const updateData = async (_json: JSON,_id:number) => {
     try {
         const repository = dataSource.getRepository(Line); 
         let jsonConvert = JSON.parse(_json)
-        const lineUpdate = await repository.findOne({where:{id:_id}});
-        line.ordre = jsonObj["ordre"];
-        line.video = jsonObj["video"];
-        line.timecode_debut = jsonObj["timecode_debut"];
-        line.timecode_fin = jsonObj["timecode_fin"];
-        line.texte = jsonObj["texte"]
+        const line = await repository.findOne({where:{id:_id}});
+        line.ordre = jsonConvert[0]["ordre"];
+        line.video = jsonConvert[0]["video"];
+        line.timecode_debut = jsonConvert[0]["timecode_debut"];
+        line.timecode_fin = jsonConvert[0]["timecode_fin"];
+        line.texte = jsonConvert[0]["texte"]
 
-        await repository.save(itemUpdate);
-        console.log("la ligne a été modifié");
+
+        await repository.save(line);
     } catch (error) {
         console.error("Erreur lors de la modification: ", error);
     }
@@ -74,7 +74,6 @@ export const showData = async () => {
     try {
         const repository = dataSource.getRepository(Line);
         const table = await repository.find();
-
         console.table(table);
     } catch (err) {
         console.log("Erreur lors de l'affichage des données: ", err);

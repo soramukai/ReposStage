@@ -26,7 +26,7 @@ export default {
     <!-- <Versions /> -->
     <!-- <Inventaire /> -->
     <VideoSelect />
-    <!-- <SrtTest /> -->
+    <SrtTest />
     <p></p>
   </div>
 </template>
