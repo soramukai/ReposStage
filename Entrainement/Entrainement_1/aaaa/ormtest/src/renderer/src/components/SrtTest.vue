@@ -1,5 +1,12 @@
 <template>
     <div>
+      <div id="srtControl">
+        <select name="langue" id="langSelect">
+          <option value="french">Francais</option>
+          <option value="english">Englais</option>
+          <option value="japanese">Japonais</option>
+        </select>          
+        </div>
       <button @click="srtConvert">Save</button>
       <input type="file" @change="handleFileChange" />
       <div v-if="srtContent">
@@ -22,12 +29,8 @@
     methods: {
       srtConvert(){
         let subtitleLines = this.srtContent.split('\n\n')
-        this.lines = new Lines(subtitleLines,"video_a_choisir");
+        this.lines = new Lines(subtitleLines,"video_a_choisir",document.getElementById("langSelect").value);
         this.lines.dbSave();
-      },
-      async test(){
-        let ddd = await window.electron.ipcRenderer.invoke('subtitle:LoadData')
-        console.log(ddd)
       }
       ,
       async loadData(){

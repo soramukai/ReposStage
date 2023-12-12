@@ -12,8 +12,8 @@ export default class IPCsSubtitle{
             updateData(_json,_id);
           });
           
-          ipcMain.handle('subtitle:LoadData',async ()=>{
-            return loadData();
+          ipcMain.handle('subtitle:LoadData',async (event,_lang:string)=>{
+            return loadData(_lang);
           });
       
           ipcMain.handle('subtitle:LoadOneData',async (event,_id)=>{

@@ -119,5 +119,5 @@ export const deleteRow = async (_id: number) => {
 
 // Ferme la connexion à la base de données lorsque l'application se termine
 process.on('exit', () => {
-    dataSource.close().catch(error => console.error("Erreur lors de la fermeture de la connexion à la base de données :", error));
+    dataSource.destroy().catch(error => console.error("Erreur lors de la fermeture de la connexion à la base de données :", error));
 });

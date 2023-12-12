@@ -7,10 +7,10 @@ export class Line {
     id: number
 
     @Column()
-    video: string
+    langue: string;
 
     @Column()
-    ordre: number;
+    video: string;
 
     @Column()
     timecode_debut: string;
@@ -35,17 +35,31 @@ dataSource.initialize().catch(error => console.error("Erreur lors de l'initialis
 export const saveData = async (_json: JSON) => {
     try {
         const repository = dataSource.getRepository(Line);
-        
-        const line = new Line();
-        let jsonObj = JSON.parse(_json);
-        line.ordre = jsonObj["ordre"];
-        line.video = jsonObj["video"];
-        line.timecode_debut = jsonObj["timecode_debut"];
-        line.timecode_fin = jsonObj["timecode_fin"];
-        line.texte = jsonObj["texte"]
 
-        await repository.save(line);
-        console.log("la ligne a été sauvegardé");
+        let jsonObj = JSON.parse(_json);
+        
+        let checkData = await repository.findOne({where:{
+            langue: jsonObj["langue"],
+            video: jsonObj["video"],
+            timecode_debut: jsonObj["timecode_debut"],
+            timecode_fin: jsonObj["timecode_fin"]
+        }})
+        console.log(checkData)
+        if(checkData==null){
+            const line = new Line();
+
+            line.langue = jsonObj["langue"];
+            line.video = jsonObj["video"];
+            line.timecode_debut = jsonObj["timecode_debut"];
+            line.timecode_fin = jsonObj["timecode_fin"];
+            line.texte = jsonObj["texte"]
+    
+            await repository.save(line);
+            console.log("la ligne a été sauvegardé");
+        }else{
+            console.log("La ligne existe deja regarder pour update")
+        }
+
     } catch (error) {
         console.error("Erreur lors de la sauvegarde: ", error);
     }
@@ -54,9 +68,10 @@ export const saveData = async (_json: JSON) => {
 export const updateData = async (_json: JSON,_id:number) => {
     try {
         const repository = dataSource.getRepository(Line); 
+
         let jsonConvert = JSON.parse(_json)
         const line = await repository.findOne({where:{id:_id}});
-        line.ordre = jsonConvert[0]["ordre"];
+        line.langue = jsonConvert[0]["langue"];
         line.video = jsonConvert[0]["video"];
         line.timecode_debut = jsonConvert[0]["timecode_debut"];
         line.timecode_fin = jsonConvert[0]["timecode_fin"];
@@ -80,11 +95,11 @@ export const showData = async () => {
     }
 };
 
-export const loadData = async () => {
+export const loadData = async (_lang:string) => {
     try {
         const repository = dataSource.getRepository(Line);
-        const table = await repository.find();
-
+        const table = await repository.find({where:{langue: _lang}});
+        
         const jsonTable = JSON.stringify(table);
         return jsonTable;
     } catch (err) {
@@ -122,5 +137,5 @@ export const deleteRow = async (_id: number) => {
 
 // Ferme la connexion à la base de données lorsque l'application se termine
 process.on('exit', () => {
-    dataSource.close().catch(error => console.error("Erreur lors de la fermeture de la connexion à la base de données :", error));
+    dataSource.destroy().catch(error => console.error("Erreur lors de la fermeture de la connexion à la base de données :", error));
 });

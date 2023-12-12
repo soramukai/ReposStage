@@ -18,15 +18,22 @@
     <div>
     <input id="zoneSubtitle" type="text" :value="currentSubtitle">
     <button id="buttonUpdate" @click="updateSubtitle" disabled>Update</button>
+    <select @change="langChange" name="langSub" id="langSub">
+      <option value="french">francais</option>
+      <option value="english">english</option>
+      <option value="japanese">日本語</option>
+    </select>
     </div>
       <div id="menu">   
       
       </div>
     </div>
+    <srtTest></srtTest>
   </div>
 </template>
 
 <script> 
+import SrtTest from './SrtTest.vue'
 export default {
   data() {
     return {
@@ -37,9 +44,12 @@ export default {
       subtitles:[],
       currentLine:[],
       currentSubtitle:""
-
     };
   },
+  components:{
+    SrtTest
+  }
+  ,
   methods: {
     async handleTimeUpdate() {
       // Mettez à jour le temps actuel de la vidéo
@@ -88,12 +98,17 @@ export default {
 
       window.electron.ipcRenderer.send('subtitle:UpdateData',jsonObject,this.currentLine[0]["id"])
     }
+    ,
+    async langChange(){
+      this.subtitles = JSON.parse(await window.electron.ipcRenderer.invoke('subtitle:LoadData',document.getElementById("langSub").value));
+      this.handleTimeUpdate();
+    }
   }
   ,
   async mounted() {
-    this.subtitles = JSON.parse(await window.electron.ipcRenderer.invoke('subtitle:LoadData'))
-    console.log(this.subtitles)
+    this.subtitles = JSON.parse(await window.electron.ipcRenderer.invoke('subtitle:LoadData',document.getElementById("langSub").value))
     document.getElementById("videoFile").src=this.videoFilePath+"converti.mp4"
+    console.log()
     window.electron.ipcRenderer.on('electron:progressPercent', (event, progress) => {
       this.conversionProgress = progress;
     });

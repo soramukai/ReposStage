@@ -1,12 +1,12 @@
 class Line{
     id
-    ordre
+    langue
     video
     timecode_debut
     timecode_fin
     texte
-    constructor(_line,_video){
-        this.ordre=""
+    constructor(_line,_video,_langue){
+        this.langue=_langue
         this.video=_video
         this.timecode_debut=""
         this.timecode_fin=""
@@ -15,7 +15,6 @@ class Line{
     }
     formatedLine(_line){
         let line = _line.split('\n');
-        this.ordre=line[0]
         let tc = line[1].split('-->')
         this.timecode_debut = tc[0]
         this.timecode_fin = tc[1]
