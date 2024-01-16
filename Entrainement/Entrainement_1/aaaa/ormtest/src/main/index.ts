@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png';
 import IPCsInventory from './IPC/IPCsInventory';
 import IPCsFfmpeg from './IPC/IPCsFfmpeg';
 import IPCsSubtitle from './IPC/IPCsSubtitles';
+import IPCsRepository from './IPC/IPCsRepository';
 
 function createWindow(): void {
   // Create the browser window.
@@ -70,6 +71,7 @@ app.whenReady().then(() => {
   IPCsInventory.initialize()
   IPCsFfmpeg.initialize()
   IPCsSubtitle.initialize()
+  IPCsRepository.initialize()
 
 
   app.on('activate', function () {

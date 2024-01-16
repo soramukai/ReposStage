@@ -1,7 +1,7 @@
 <!-- App.vue -->
 
 <script lang="ts">
-import VideoSelect from './components/VideoSelect.vue';
+import Versions from './components/Versions.vue';
 
 export default {
   data() {
@@ -10,14 +10,14 @@ export default {
     };
   },
   components: {
-    VideoSelect,
+    Versions,
   },
 };
 </script>
 
 <template>
   <div>
-    <VideoSelect />
+    <Versions />
     <p></p>
   </div>
 </template>
