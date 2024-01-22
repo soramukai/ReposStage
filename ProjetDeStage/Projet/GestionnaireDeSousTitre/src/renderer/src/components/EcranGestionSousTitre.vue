@@ -43,6 +43,7 @@
                 :items-per-page="itemParPage"
                 show-select
                 @click:row="cliqueLignes"
+                :height="tableHeight"
             >
             </v-data-table>
         </div>
@@ -421,7 +422,7 @@ export default {
             texte: "C'est bien ce que je viens de dire",	
           },
         ],		  
-      tableHeight: 350, // Hauteur maximale du tableau en pixels  
+      tableHeight: 450, // Hauteur maximale du tableau en pixels  
         }
     },
     methods:{
@@ -511,7 +512,9 @@ export default {
         },
     },  
     async mounted(){
-        document.querySelector(".v-data-table-footer").setAttribute("style","visibility:hidden")
+
+        document.querySelector(".v-data-table-footer").innerHTML=""
+
         this.itemParPage=this.items.length
         this.cheminDeLaVideo="video.mp4"
         this.messageInformatif=""
@@ -545,11 +548,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .bg{
     background-color: red !important;
 }
-
     #gestionSousTitre{
         display: flex;
         flex-direction: row;
