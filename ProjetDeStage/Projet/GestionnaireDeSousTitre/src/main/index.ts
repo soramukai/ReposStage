@@ -22,10 +22,13 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
+  mainWindow.webContents.on('before-input-event', (_, input) => {
+    if (input.type === 'keyDown' && input.key === 'F12') {
+      mainWindow.webContents.isDevToolsOpened()
+        ? mainWindow.webContents.closeDevTools()
+        : mainWindow.webContents.openDevTools({ mode: 'left' });
+    }
+});
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.

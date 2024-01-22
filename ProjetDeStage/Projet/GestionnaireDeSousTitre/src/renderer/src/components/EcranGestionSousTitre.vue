@@ -38,10 +38,11 @@
         <div class="section">
             <v-data-table
                 v-model="ligneSelectionnee"
-                :items="items"
+                :items="items"  
                 item-value="id"
+                :items-per-page="itemParPage"
                 show-select
-                @click:row="selectRow"
+                @click:row="cliqueLignes"
             >
             </v-data-table>
         </div>
@@ -61,6 +62,7 @@
 export default {
     data(){
         return{
+            itemParPage:10,
             mode:"",
             idSousTitre:"",
             zIndexSousTitre:"",
@@ -77,9 +79,6 @@ export default {
             messageInformatif:"",
             texteDuMode:"",
             ligneSelectionnee: [],
-            ligneSelectionneeCompare: [],
-            ligneSelectionneeListe:[],
-            selected: [],
       items: [	
           {	
             id:	1
@@ -421,16 +420,11 @@ export default {
 	        zindex: 1,
             texte: "C'est bien ce que je viens de dire",	
           },
-        ],		
-
-      tableHeight: 350, // Hauteur maximale du tableau en pixels
+        ],		  
+      tableHeight: 350, // Hauteur maximale du tableau en pixels  
         }
     },
     methods:{
-        updateligneSelectionnee(value) {
-        // Mettez à jour la variable ligneSelectionneeItems lors de la mise à jour de la sélection
-        this.ligneSelectionneeItems = value;
-        },
         changerVersion(){
             switch(this.langueSelectionne){
                 case "Francais":
@@ -445,45 +439,6 @@ export default {
                     this.versionSelectionne =""
                     this.versions=["JP001","JP010"]
             }
-        }
-        ,
-        selectCheckBox(){
-            console.log("eeee")
-        },
-        selectRow(item,event) {
-
-            let tr=item.target.parentElement
-            let input=tr.children[0].children[0].children[0].children[0].children[1]
-
-            if(input.checked){
-                tr.className="v-data-table__tr v-data-table__tr--clickable"
-                input.checked=false
-                // Trouver l'index de l'élément dans ligneSelectionneeItems
-                const indexToRemove = this.ligneSelectionnee.indexOf(event.item);
-
-                // Si l'élément est trouvé, le supprimer
-                if (indexToRemove !== -1) {
-                    this.ligneSelectionnee.splice(indexToRemove, 1);
-                }
-            }
-            else{
-                tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
-                input.checked=true
-                this.ligneSelectionnee.push(event.item)
-            }
-            if(this.ligneSelectionnee.length>1){
-                this.mode="Modification"
-                this.viderChamps()
-            }
-            else if(this.ligneSelectionnee.length==1){
-                this.mode="Modification"
-                this.remplirChamps(this.ligneSelectionnee[0])    
-            }
-            else{
-                this.mode="Creation"
-                this.viderChamps()
-            }
-            this.ligneSelectionneeCompare=this.ligneSelectionnee
         },
         async remplirChamps(item){
             this.langueSelectionne=await item.langue
@@ -515,91 +470,49 @@ export default {
                 this.texteDuMode="Modifier"
             }
         },
-        getelement(){
-            //A check et a tester
+        //Quand on coche une CheckBox
+        cliqueCheckBox(){
+          this.miseAJoursEcran()
+        },        
+        //Quand on click sur une rangée
+        cliqueLignes(item,event) {
+          //Ternaire qui ajoute ou enleve l'element selectionner de la liste
+          const i=this.ligneSelectionnee.indexOf(event.item.id)
+          !this.ligneSelectionnee.includes(event.item.id)?this.ligneSelectionnee.push(event.item.id):this.ligneSelectionnee.splice(i,1)
+          this.miseAJoursEcran()
+        },
+        deSurlignageLignes(){
+          const trsS = Array.from(document.querySelectorAll(".v-data-table__tr--clickableSelected")).filter((l)=>!this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
+          trsS.forEach(tr=>{
+            tr.className="v-data-table__tr v-data-table__tr--clickable"
+          })
+        },
+        async miseAJoursEcran(){
 
-            let ListeTemp=this.ligneSelectionnee
-            let ListeCompare = this.ligneSelectionneeCompare
-            this.ligneSelectionneeListe=[]
+          //Si une seul ligne est selectionné
+          this.ligneSelectionnee.length===1?await this.remplirChamps(this.items.find(x=>x.id==this.ligneSelectionnee[0])):await this.viderChamps()
 
-
-            let key = "" 
-
-            if(ListeCompare.length == ListeTemp.length-1){
-                console.log("SELECTION")
-                ListeTemp.forEach(el=>{
-                    if(!ListeCompare.includes(el)){
-                        key = el
-
-                    }
-                })
-
-                let rows = document.querySelectorAll(".v-data-table__tr--clickable")
-                rows.forEach(row=>{
-                    if(row.children[1].textContent==key){
-                        row.className="v-data-table__tr v-data-table__tr--clickableSelected"
-                    }
-                })
-
-                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
-                rowsS.forEach(x=>{
-                    this.ligneSelectionneeListe.push(x)
-                })
-                this.ligneSelectionneeCompare = this.ligneSelectionnee
-            }
-            else if(ListeCompare.length == ListeTemp.length+1){
-                console.log("DESELECTION")
-
-                ListeCompare.forEach(el=>{
-                    if(!ListeTemp.includes(el)){
-                        key = el
-                    }
-                })
-
-                let rows = document.querySelectorAll(".v-data-table__tr--clickableSelected")
-                rows.forEach(row=>{
-                    if(row.children[1].textContent==key){
-                        row.className="v-data-table__tr v-data-table__tr--clickable"
-                    }
-                })
-
-                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
-                rowsS.forEach(x=>{
-                    this.ligneSelectionneeListe.push(x)
-                })
-                this.ligneSelectionneeCompare = this.ligneSelectionnee
-            }
-            else if(ListeTemp.length > ListeCompare.length){
-                console.log("SELECTION ALL")
-                let rows = document.querySelectorAll(".v-data-table__tr--clickable")
-                rows.forEach(row=>{
-                    row.className="v-data-table__tr v-data-table__tr--clickableSelected"
-                })
-
-                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
-                rowsS.forEach(x=>{
-                    this.ligneSelectionneeListe.push(x)
-                })
-                this.ligneSelectionneeCompare = this.ligneSelectionnee
-            }
-            else{
-                console.log("DESELECTION ALL")
-                let rows = document.querySelectorAll(".v-data-table__tr--clickableSelected")
-                rows.forEach(row=>{
-                    row.className="v-data-table__tr v-data-table__tr--clickable"
-                })
-
-                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
-                rowsS.forEach(x=>{
-                    this.ligneSelectionneeListe.push(x)
-                })
-                this.ligneSelectionneeCompare = this.ligneSelectionnee
-            }
-
-            console.log(this.ligneSelectionneeListe)
+          if(this.ligneSelectionnee.length>=1){
+            this.mode="Modification"
+            this.texteDuMode="Modifier"
+          }
+          else{
+            this.mode="Creation"
+            this.texteDuMode="Créer"
+          }
+          this.surlignageLignes()
+          this.deSurlignageLignes()
+        },
+        surlignageLignes(){
+          const trs = Array.from(document.querySelectorAll(".v-data-table__tr--clickable")).filter((l)=>this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
+          trs.forEach(tr=>{
+            tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
+          })
         },
     },  
     async mounted(){
+        document.querySelector(".v-data-table-footer").setAttribute("style","visibility:hidden")
+        this.itemParPage=this.items.length
         this.cheminDeLaVideo="video.mp4"
         this.messageInformatif=""
         this.mode="Creation"
@@ -623,17 +536,10 @@ export default {
         }
         ,
         ligneSelectionnee(){
-            this.getelement()
+            this.cliqueCheckBox()
         }
     },
     computed: {
-      virtualBoats () {
-        return [...Array(10000).keys()].map(i => {
-          const boat = { ...this.boats[i % this.boats.length] }
-          boat.name = `${boat.name} #${i}`
-          return boat
-        })
-      },
     },
 }
 </script>
