@@ -1,7 +1,9 @@
 <!-- App.vue -->
 
 <script lang="ts">
-import Versions from './components/Versions.vue';
+import EcranChoixRepertoire from './components/EcranChoixRepertoire.vue';
+import EcranModificationLVA from './components/EcranModificationLVA.vue';
+import EcranGestionSousTitre from './components/EcranGestionSousTitre.vue';
 
 export default {
   data() {
@@ -10,14 +12,16 @@ export default {
     };
   },
   components: {
-    Versions,
+    EcranChoixRepertoire,
+    EcranModificationLVA,
+    EcranGestionSousTitre
   },
 };
 </script>
 
 <template>
   <div>
-    <Versions />
+    <EcranGestionSousTitre />
     <p></p>
   </div>
 </template>

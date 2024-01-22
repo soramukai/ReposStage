@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import ipcVideo from './IPC/ipcVideo.ts';
 
 function createWindow(): void {
   // Create the browser window.
@@ -50,6 +51,7 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+  ipcVideo.initialize()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

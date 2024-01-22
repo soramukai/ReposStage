@@ -1,0 +1,734 @@
+<template>
+    <div id="gestionSousTitre">
+        <div class="section">
+            <div class="videoGestionSousTitre">
+                <v-row>
+                    <v-col>
+                        <video id="video" :src="cheminDeLaVideo" controls></video>
+                    </v-col>
+                </v-row>
+            </div>
+
+            <div class="videoGestionSousTitre">
+                <v-text-field readonly="" class="gridArea" variant="outlined"> Mode {{ mode }}</v-text-field>
+
+                <v-select class="gridArea" variant="outlined" label="Langue" v-model="langueSelectionne" :items="langues"></v-select>
+                <v-btn class="gridArea" variant="tonal">Gestion Langue</v-btn>
+
+                <v-select class="gridArea" variant="outlined" label="Version" v-model="versionSelectionne" :items="versions"></v-select>
+                <v-btn class="gridArea" variant="tonal">Gestion Version</v-btn>
+
+                <v-text-field class="gridArea" variant="outlined" v-model="idSousTitre" label="id"></v-text-field>
+                <v-text-field class="gridArea" variant="outlined" v-model="zIndexSousTitre" label="z-index"></v-text-field>
+                <v-text-field class="gridArea" variant="outlined" v-model="timecodeDebutSousTitre" label="time-code debut"></v-text-field>
+                <v-text-field class="gridArea" variant="outlined" v-model="timecodeFinSousTitre" label="time-code fin"></v-text-field>
+
+                <v-select class="gridArea" variant="outlined" label="Acteur" v-model="acteurSelectionne" :items="acteurs"></v-select>
+
+                <v-btn class="gridArea" variant="tonal">Gestion Acteur</v-btn>
+
+                <v-textarea class="gridArea" variant="outlined" v-model="texteSousTitre">{{ texteSousTitre }}</v-textarea>
+                <v-btn class="gridArea" variant="tonal">{{ texteDuMode }}</v-btn>
+                <v-btn class="gridArea" variant="tonal">Copier</v-btn>
+                <v-btn id="supprimer" class="gridArea supprimer" variant="tonal">Supprimer</v-btn>
+                <v-btn class="gridArea" variant="tonal">Filtrer</v-btn>
+            </div>
+        </div>
+
+        <div class="section">
+            <v-data-table
+                v-model="ligneSelectionnee"
+                :items="items"
+                item-value="id"
+                show-select
+                @click:row="selectRow"
+            >
+            </v-data-table>
+        </div>
+
+        <div class="section">
+            <v-btn class="bouton optionProjet" variant="tonal">Exporter</v-btn>
+            <v-btn class="bouton optionProjet" variant="tonal">Importer</v-btn>
+            <v-btn class="bouton optionProjet" variant="tonal">Sauvegarder</v-btn>
+            <v-text-field class="input optionProjet" readonly si>{{ messageInformatif }}</v-text-field>
+            <v-btn class="bouton optionProjet retour" variant="tonal">Retour</v-btn>
+        </div>
+    </div>
+    
+</template>
+
+<script>
+export default {
+    data(){
+        return{
+            mode:"",
+            idSousTitre:"",
+            zIndexSousTitre:"",
+            timecodeDebutSousTitre:"",
+            timecodeFinSousTitre:"",
+            texteSousTitre:"",
+            langues:[],
+            langueSelectionne:"",
+            versions:[],
+            versionSelectionne:"",
+            acteurs:[],
+            acteurSelectionne:"",
+            cheminDeLaVideo:"",
+            messageInformatif:"",
+            texteDuMode:"",
+            ligneSelectionnee: [],
+            ligneSelectionneeCompare: [],
+            ligneSelectionneeListe:[],
+            selected: [],
+      items: [	
+          {	
+            id:	1
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:33',	
+            timeCodeFin: '00:01:35',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "Salut... Jhonny",	
+          },	
+          {	
+            id:	2
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:36',	
+            timeCodeFin: '00:01:39',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Hey Comment tu vas l'ami?",	
+          },	
+          {	
+            id:	3
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:42',	
+            timeCodeFin: '00:01:48',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
+          },	
+          {	
+            id:	4
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:50',	
+            timeCodeFin: '00:01:55',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
+          },	
+          {	
+            id:	5
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:59',	
+            timeCodeFin: '00:02:04',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
+          },	
+          {	
+            id:	6
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:06',	
+            timeCodeFin: '00:02:08',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "C'est bien ce que je viens de dire",	
+          },	
+          {	
+            id:	7
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:10',	
+            timeCodeFin: '00:02:13',	
+            acteur: 'Boby',	
+	        zindex: 1,
+            texte: 'Toujours dans les magouille... Jhonny',	
+          },	
+          {	
+            id:	8
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:16',	
+            timeCodeFin: '00:02:19',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "On se debrouille comme on peut",	
+          },	
+          {	
+            id:	9
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:36',	
+            timeCodeFin: '00:01:39',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Hey Comment tu vas l'ami?",	
+          },	
+          {	
+            id:	10
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:42',	
+            timeCodeFin: '00:01:48',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
+          },	
+          {	
+            id:	11
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:50',	
+            timeCodeFin: '00:01:55',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
+          },	
+          {	
+            id:	12
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:59',	
+            timeCodeFin: '00:02:04',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
+          },	
+          {	
+            id:	13
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:06',	
+            timeCodeFin: '00:02:08',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "C'est bien ce que je viens de dire",	
+          },	
+          {	
+            id:	14
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:10',	
+            timeCodeFin: '00:02:13',	
+            acteur: 'Boby',	
+	        zindex: 1,
+            texte: 'Toujours dans les magouille... Jhonny',	
+          },	
+          {	
+            id:	15
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:16',	
+            timeCodeFin: '00:02:19',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "On se debrouille comme on peut",	
+          },	
+          {	
+            id:	16
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:36',	
+            timeCodeFin: '00:01:39',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Hey Comment tu vas l'ami?",	
+          },	
+          {	
+            id:	17
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:42',	
+            timeCodeFin: '00:01:48',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
+          },	
+          {	
+            id:	18
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:50',	
+            timeCodeFin: '00:01:55',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
+          },	
+          {	
+            id:	19
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:59',	
+            timeCodeFin: '00:02:04',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
+          },	
+          {	
+            id:	20
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:06',	
+            timeCodeFin: '00:02:08',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "C'est bien ce que je viens de dire",	
+          },	
+          {	
+            id:	21
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:10',	
+            timeCodeFin: '00:02:13',	
+            acteur: 'Boby',	
+	        zindex: 1,
+            texte: 'Toujours dans les magouille... Jhonny',	
+          },	
+          {	
+            id:	22
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:16',	
+            timeCodeFin: '00:02:19',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "On se debrouille comme on peut",	
+          },	
+          {	
+            id:	23
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:36',	
+            timeCodeFin: '00:01:39',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Hey Comment tu vas l'ami?",	
+          },	
+          {	
+            id:	24
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:42',	
+            timeCodeFin: '00:01:48',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
+          },	
+          {	
+            id:	25
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:50',	
+            timeCodeFin: '00:01:55',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
+          },	
+          {	
+            id:	26
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:59',	
+            timeCodeFin: '00:02:04',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
+          },	
+          {	
+            id:	27
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:06',	
+            timeCodeFin: '00:02:08',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "C'est bien ce que je viens de dire",	
+          },	
+          {	
+            id:	28
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:10',	
+            timeCodeFin: '00:02:13',	
+            acteur: 'Boby',	
+	        zindex: 1,
+            texte: 'Toujours dans les magouille... Jhonny',	
+          },	
+          {	
+            id:	29
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:16',	
+            timeCodeFin: '00:02:19',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "On se debrouille comme on peut",	
+          },	
+          {	
+            id:	30
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:36',	
+            timeCodeFin: '00:01:39',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Hey Comment tu vas l'ami?",	
+          },	
+          {	
+            id:	31
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:42',	
+            timeCodeFin: '00:01:48',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
+          },	
+          {	
+            id:	32
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:50',	
+            timeCodeFin: '00:01:55',	
+            acteur: 'Jhonny',	
+            zindex: 1,	
+            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
+          },	
+          {	
+            id:	33
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:01:59',	
+            timeCodeFin: '00:02:04',	
+            acteur: 'Boby',	
+            zindex: 1,	
+            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
+          },	
+          {	
+            id:	34
+            ,langue: 'Francais',	
+            version:"FR001",	
+            timeCodeDebut: '00:02:06',	
+            timeCodeFin: '00:02:08',	
+            acteur: 'Jhonny',	
+	        zindex: 1,
+            texte: "C'est bien ce que je viens de dire",	
+          },
+        ],		
+
+      tableHeight: 350, // Hauteur maximale du tableau en pixels
+        }
+    },
+    methods:{
+        updateligneSelectionnee(value) {
+        // Mettez à jour la variable ligneSelectionneeItems lors de la mise à jour de la sélection
+        this.ligneSelectionneeItems = value;
+        },
+        changerVersion(){
+            switch(this.langueSelectionne){
+                case "Francais":
+                    this.versionSelectionne =""
+                    this.versions=["FR001","FR002","FR003"]
+                    break
+                case "Anglais":
+                    this.versionSelectionne =""
+                    this.versions=["EN001"]
+                    break
+                case "Japonais":
+                    this.versionSelectionne =""
+                    this.versions=["JP001","JP010"]
+            }
+        }
+        ,
+        selectCheckBox(){
+            console.log("eeee")
+        },
+        selectRow(item,event) {
+
+            let tr=item.target.parentElement
+            let input=tr.children[0].children[0].children[0].children[0].children[1]
+
+            if(input.checked){
+                tr.className="v-data-table__tr v-data-table__tr--clickable"
+                input.checked=false
+                // Trouver l'index de l'élément dans ligneSelectionneeItems
+                const indexToRemove = this.ligneSelectionnee.indexOf(event.item);
+
+                // Si l'élément est trouvé, le supprimer
+                if (indexToRemove !== -1) {
+                    this.ligneSelectionnee.splice(indexToRemove, 1);
+                }
+            }
+            else{
+                tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
+                input.checked=true
+                this.ligneSelectionnee.push(event.item)
+            }
+            if(this.ligneSelectionnee.length>1){
+                this.mode="Modification"
+                this.viderChamps()
+            }
+            else if(this.ligneSelectionnee.length==1){
+                this.mode="Modification"
+                this.remplirChamps(this.ligneSelectionnee[0])    
+            }
+            else{
+                this.mode="Creation"
+                this.viderChamps()
+            }
+            this.ligneSelectionneeCompare=this.ligneSelectionnee
+        },
+        async remplirChamps(item){
+            this.langueSelectionne=await item.langue
+            this.versionSelectionne=await item.version
+            this.acteurSelectionne=item.acteur
+            this.idSousTitre=item.id
+            this.timecodeDebutSousTitre=item.timeCodeDebut
+            this.timecodeFinSousTitre=item.timeCodeFin
+            this.texteSousTitre=item.texte
+            this.zIndexSousTitre=item.zindex
+        },
+        async viderChamps(){
+            this.langueSelectionne=""
+            this.versionSelectionne=""
+            this.acteurSelectionne=""
+            this.idSousTitre=""
+            this.timecodeDebutSousTitre=""
+            this.timecodeFinSousTitre=""
+            this.texteSousTitre=""
+            this.zIndexSousTitre=""
+        },
+        activationBouton(){
+            if(this.mode=="Creation"){
+                document.getElementById("supprimer").style.visibility = "hidden";
+                this.texteDuMode="Créer"
+            }
+            else{
+                document.getElementById("supprimer").style.visibility = "visible";
+                this.texteDuMode="Modifier"
+            }
+        },
+        getelement(){
+            //A check et a tester
+
+            let ListeTemp=this.ligneSelectionnee
+            let ListeCompare = this.ligneSelectionneeCompare
+            this.ligneSelectionneeListe=[]
+
+
+            let key = "" 
+
+            if(ListeCompare.length == ListeTemp.length-1){
+                console.log("SELECTION")
+                ListeTemp.forEach(el=>{
+                    if(!ListeCompare.includes(el)){
+                        key = el
+
+                    }
+                })
+
+                let rows = document.querySelectorAll(".v-data-table__tr--clickable")
+                rows.forEach(row=>{
+                    if(row.children[1].textContent==key){
+                        row.className="v-data-table__tr v-data-table__tr--clickableSelected"
+                    }
+                })
+
+                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
+                rowsS.forEach(x=>{
+                    this.ligneSelectionneeListe.push(x)
+                })
+                this.ligneSelectionneeCompare = this.ligneSelectionnee
+            }
+            else if(ListeCompare.length == ListeTemp.length+1){
+                console.log("DESELECTION")
+
+                ListeCompare.forEach(el=>{
+                    if(!ListeTemp.includes(el)){
+                        key = el
+                    }
+                })
+
+                let rows = document.querySelectorAll(".v-data-table__tr--clickableSelected")
+                rows.forEach(row=>{
+                    if(row.children[1].textContent==key){
+                        row.className="v-data-table__tr v-data-table__tr--clickable"
+                    }
+                })
+
+                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
+                rowsS.forEach(x=>{
+                    this.ligneSelectionneeListe.push(x)
+                })
+                this.ligneSelectionneeCompare = this.ligneSelectionnee
+            }
+            else if(ListeTemp.length > ListeCompare.length){
+                console.log("SELECTION ALL")
+                let rows = document.querySelectorAll(".v-data-table__tr--clickable")
+                rows.forEach(row=>{
+                    row.className="v-data-table__tr v-data-table__tr--clickableSelected"
+                })
+
+                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
+                rowsS.forEach(x=>{
+                    this.ligneSelectionneeListe.push(x)
+                })
+                this.ligneSelectionneeCompare = this.ligneSelectionnee
+            }
+            else{
+                console.log("DESELECTION ALL")
+                let rows = document.querySelectorAll(".v-data-table__tr--clickableSelected")
+                rows.forEach(row=>{
+                    row.className="v-data-table__tr v-data-table__tr--clickable"
+                })
+
+                let rowsS = document.querySelectorAll(".v-data-table__tr--clickableSelected")
+                rowsS.forEach(x=>{
+                    this.ligneSelectionneeListe.push(x)
+                })
+                this.ligneSelectionneeCompare = this.ligneSelectionnee
+            }
+
+            console.log(this.ligneSelectionneeListe)
+        },
+    },  
+    async mounted(){
+        this.cheminDeLaVideo="video.mp4"
+        this.messageInformatif=""
+        this.mode="Creation"
+        this.texteDuMode="Créer"
+        this.langues=["Francais","Anglais","Japonais"]
+        this.acteurs=["Boby","Jhonny","Mimi"]
+        let i=1
+
+        document.querySelectorAll(".lignesNumero").forEach(row=>{
+            console.log(row)
+            row.textContent=i
+            i++
+        })
+    },
+    watch:{
+        langueSelectionne(){
+            this.changerVersion()
+        },
+        mode(){
+            this.activationBouton()
+        }
+        ,
+        ligneSelectionnee(){
+            this.getelement()
+        }
+    },
+    computed: {
+      virtualBoats () {
+        return [...Array(10000).keys()].map(i => {
+          const boat = { ...this.boats[i % this.boats.length] }
+          boat.name = `${boat.name} #${i}`
+          return boat
+        })
+      },
+    },
+}
+</script>
+
+<style lang="scss" scoped>
+
+.bg{
+    background-color: red !important;
+}
+
+    #gestionSousTitre{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .supprimer{
+        background-color: lightcoral;
+        color: white;
+    }
+    .section:nth-child(1){
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        border: 1px double   #86a5b1;
+
+        .videoGestionSousTitre{
+
+        }
+        .videoGestionSousTitre:nth-child(1){
+            margin: auto;
+
+            height: 100%;
+            #video{
+                width: 800px;
+                height: 450px;
+            }
+        }
+        .videoGestionSousTitre:nth-child(2){
+            width: 100%;
+            border: 1px double #86a5b1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 6 colonnes égales */
+            gap: 10px; /* Espacement entre les éléments */
+            grid-template-areas:
+                "zone1 zone1 . . . . ."
+                "zone2 zone2 . . . zone3 zone3"
+                "zone4 zone4 . . . zone5 zone5"
+                "zone6 zone7 zone8 zone9 zone10 tzone11 tzone11"
+                "zone12 zone12 zone12 zone12 zone12 zone12 zone12"
+                "zone12 zone12 zone12 zone12 zone12 zone12 zone12"
+                "zone13 zone14 . . . . zone15"
+                "zone16 zone16 . . . . .";
+                .gridArea:nth-child(1){grid-area: zone1;}
+                .gridArea:nth-child(2){grid-area: zone2;}
+                .gridArea:nth-child(3){grid-area: zone3;}
+                .gridArea:nth-child(4){grid-area: zone4;}
+                .gridArea:nth-child(5){grid-area: zone5;}
+                .gridArea:nth-child(6){grid-area: zone6;}
+                .gridArea:nth-child(7){grid-area: zone7;}
+                .gridArea:nth-child(8){grid-area: zone8;}
+                .gridArea:nth-child(9){grid-area: zone9;}
+                .gridArea:nth-child(10){grid-area: zone10;}
+                .gridArea:nth-child(11){grid-area: tzone11;}
+                .gridArea:nth-child(12){grid-area: zone12;}
+                .gridArea:nth-child(13){grid-area: zone13;}
+                .gridArea:nth-child(14){grid-area: zone14;}
+                .gridArea:nth-child(15){grid-area: zone15;}
+                .gridArea:nth-child(16){grid-area: zone16;}
+        }
+
+    }
+
+    .ligneSelectionne{
+
+    }
+    .section:nth-child(2){
+        width: 100%;
+        border: 1px double #86a5b1;
+    }
+    .section:nth-child(3){
+        width: 100%;
+        border: 1px double #86a5b1;
+        display: flex;
+        .optionProjet{
+            margin: 5px 10px 5px 10px;
+        }
+    }    
+
+    .bouton{
+        height: 2em !important;
+    }
+    .input{
+     height: 0;   
+    }
+
+
+
+</style>
