@@ -27,9 +27,11 @@
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
+    "page": "^1.11.6",
     "sass": "^1.69.7",
     "sqlite3": "^5.1.6",
-    "typeorm": "^0.3.17",
+    "typeorm": "^0.3.19",
+    "vue-router": "^4.2.5",
     "vuetify": "^3.4.10"
   },
   "devDependencies": {

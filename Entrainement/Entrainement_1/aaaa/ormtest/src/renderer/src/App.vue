@@ -1,7 +1,7 @@
 <!-- App.vue -->
 
 <script lang="ts">
-import Versions from './components/Versions.vue';
+import Inventaire from './components/Inventaire.vue';
 
 export default {
   data() {
@@ -10,14 +10,14 @@ export default {
     };
   },
   components: {
-    Versions,
+    Inventaire,
   },
 };
 </script>
 
 <template>
   <div>
-    <Versions />
+    <Inventaire />
     <p></p>
   </div>
 </template>

@@ -13,10 +13,14 @@
                 <v-text-field readonly="" class="gridArea" variant="outlined"> Mode {{ mode }}</v-text-field>
 
                 <v-select class="gridArea" variant="outlined" label="Langue" v-model="langueSelectionne" :items="langues"></v-select>
-                <v-btn class="gridArea" variant="tonal">Gestion Langue</v-btn>
+                <router-link @click="() => ouvrirNouvelleFenetre('Langue')" class="gridArea gestionLVA" to="/modification-lva">
+                  <v-btn class="boutonLVA"  variant="tonal">Gestion Langue</v-btn>
+                </router-link>
 
                 <v-select class="gridArea" variant="outlined" label="Version" v-model="versionSelectionne" :items="versions"></v-select>
-                <v-btn class="gridArea" variant="tonal">Gestion Version</v-btn>
+                <router-link @click="() => ouvrirNouvelleFenetre('Version')" class="gridArea gestionLVA" to="/modification-lva">
+                  <v-btn class="boutonLVA" variant="tonal">Gestion Version</v-btn>
+                </router-link>
 
                 <v-text-field class="gridArea" variant="outlined" v-model="idSousTitre" label="id"></v-text-field>
                 <v-text-field class="gridArea" variant="outlined" v-model="zIndexSousTitre" label="z-index"></v-text-field>
@@ -25,7 +29,9 @@
 
                 <v-select class="gridArea" variant="outlined" label="Acteur" v-model="acteurSelectionne" :items="acteurs"></v-select>
 
-                <v-btn class="gridArea" variant="tonal">Gestion Acteur</v-btn>
+                <router-link @click="() => ouvrirNouvelleFenetre('Personnage')" class="gridArea gestionLVA" to="/modification-lva">
+                  <v-btn class="boutonLVA" variant="tonal">Gestion Acteur</v-btn>
+                </router-link>
 
                 <v-textarea class="gridArea" variant="outlined" v-model="texteSousTitre">{{ texteSousTitre }}</v-textarea>
                 <v-btn class="gridArea" variant="tonal">{{ texteDuMode }}</v-btn>
@@ -53,7 +59,10 @@
             <v-btn class="bouton optionProjet" variant="tonal">Importer</v-btn>
             <v-btn class="bouton optionProjet" variant="tonal">Sauvegarder</v-btn>
             <v-text-field class="input optionProjet" readonly si>{{ messageInformatif }}</v-text-field>
-            <v-btn class="bouton optionProjet retour" variant="tonal">Retour</v-btn>
+
+            <router-link class="route" to="/">
+              <v-btn class="bouton optionProjet retour" variant="tonal">Retour</v-btn>
+            </router-link>
         </div>
     </div>
     
@@ -426,6 +435,16 @@ export default {
         }
     },
     methods:{
+      ouvrirNouvelleFenetre(page) {
+        //window.electron.ipcRenderer.send('electron:gestionLangue',"Langue")
+        this.$router.push({
+          path: '/modification-lva',
+          query: {
+            prop1: page,
+          },
+        });
+        
+      },
         changerVersion(){
             switch(this.langueSelectionne){
                 case "Francais":
@@ -456,6 +475,7 @@ export default {
             this.versionSelectionne=""
             this.acteurSelectionne=""
             this.idSousTitre=""
+            this.timecodeDebutSousTitre=""
             this.timecodeDebutSousTitre=""
             this.timecodeFinSousTitre=""
             this.texteSousTitre=""
@@ -548,9 +568,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.bg{
-    background-color: red !important;
-}
+    .bg{
+        background-color: red !important;
+    }
+
+    .route{
+      color: #86a5b1;
+      .retour{
+        width: 100%;
+      }
+    }
+    .gestionLVA{
+      color: #86a5b1;
+      .boutonLVA{
+        width: 100%;
+      }
+    }
     #gestionSousTitre{
         display: flex;
         flex-direction: row;

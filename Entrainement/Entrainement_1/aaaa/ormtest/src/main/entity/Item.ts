@@ -33,6 +33,9 @@ export const saveData = async (_json: JSON) => {
     try {
         const repository = dataSource.getRepository(Item);
 
+
+        console.table(repository)
+
         const item = new Item();
         let jsonObj = JSON.parse(_json);
 

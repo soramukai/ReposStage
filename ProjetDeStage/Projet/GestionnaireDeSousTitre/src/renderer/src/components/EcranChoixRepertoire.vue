@@ -1,12 +1,20 @@
 <!-- FolderSelectButton.vue -->
 <template>
+    <v-card 
+      class="NomDeLaPage" 
+      readonly>
+      <h1>
+          Choix du repertoire
+      </h1>
+  </v-card>
   <div id="SelectionRepertoireSection">
     <div class="SelectionRepertoireSection">
       <!-- Bouton de sélection du dossier -->
-      <v-btn class="elementSelectionRepertoire" @click="SelectionDuRepertoire">Sélectionner un dossier</v-btn>
+      <v-btn variant="tonal" class="elementSelectionRepertoire" @click="SelectionDuRepertoire">Sélectionner un dossier</v-btn>
       
       <!-- Nom du dossier sélectionné -->
-      <v-list-subheader class="descriptif">Contenue du repertoire</v-list-subheader>
+      <v-list-subheader class="descriptif">Contenue du reperto
+        ire</v-list-subheader>
       <v-text-field readonly>{{ nomDuDossier }}</v-text-field>
 
       <!-- Récapitulatif de tous les éléments du dossier -->
@@ -30,11 +38,12 @@
           :items="fichiersVideo"
           label="Sélectionnez un fichier vidéo"
         ></v-select>
+        
         <!--Bouton d'importation de video-->
         <v-list-subheader class="descriptif">Inmporter une Video</v-list-subheader>
         <v-file-input class="video"></v-file-input>
-        <v-btn class="video">Convertir</v-btn>
-        <v-btn class="video">Supprimer</v-btn>
+        <v-btn variant="tonal" class="video">Convertir</v-btn>
+        <v-btn variant="tonal" class="video">Supprimer</v-btn>
       </div>
       
       <!-- Liste de sélection pour les bases de données -->
@@ -47,14 +56,17 @@
         ></v-select>
         <v-list-subheader class="descriptif">Importer une BDD</v-list-subheader>
         <v-file-input class="BDD"></v-file-input>
-        <v-btn class="BDD">Copier</v-btn>
-        <v-btn class="BDD">Supprimer</v-btn>
+        <v-btn variant="tonal" class="BDD">Copier</v-btn>
+        <v-btn variant="tonal" class="BDD">Supprimer</v-btn>
       </div>
     </div>
 
     <div class="SelectionRepertoireSection">
+      <router-link class="route" to="/gestion-sous-titre">
       <!-- Bouton "Charger" -->
-      <v-btn @click="ChargerFichier" :disabled="!fichiersVideoSelectionnee">Charger</v-btn>
+      <!--<v-btn @click="ChargerFichier" :disabled="!fichiersVideoSelectionnee">Charger</v-btn>-->
+        <v-btn variant="tonal" @click="ChargerFichier" >Charger</v-btn>
+      </router-link>
     </div>
   </div>
 </template>
@@ -72,42 +84,37 @@ export default {
     };
   },
   methods: {
-    SelectionDuRepertoire() {
-      // Logique pour la sélection du dossier
-      const selectedFolderPath = '/chemin/du/dossier';
-      this.nomDuDossier = selectedFolderPath;
+    async SelectionDuRepertoire() {
+      try {
+        // Demandez à l'utilisateur de sélectionner un dossier
+        const folderHandle = await window.showDirectoryPicker();
+        
+        // Obtenez le chemin relatif du dossier
+        const relativePath = await this.getRelativePath(folderHandle);
 
-      // Liste des fichiers du répertoire (remplacer par la vraie liste de fichiers)
-      const listeFichiers = ['test.mp4', 'test2.mp4', 'test3.avi', 'test1.pdf', 'test1.sqlite3', 'test.db', 'data.sqlite'];
+        // Construisez l'URL en utilisant le chemin relatif
+        const folderURL = new URL(relativePath, 'file://').href;
 
-      // Mise à jour de la liste de tous les fichiers du répertoire
-      this.fichiersDuRepertoire = listeFichiers;
+        // Affichez l'URL dans la console
+        console.log("URL du dossier sélectionné :", folderURL);
+      } catch (error) {
+        console.error('Erreur lors de la sélection du dossier :', error);
+      }
+    },
+    async getRelativePath(folderHandle) {
+      const entries = [];
 
-      // Filtrer les fichiers par extension pour la liste de sélection des vidéos
-      this.fichiersVideo = listeFichiers.filter(fichier => {
-        const extension = fichier.split('.').pop().toLowerCase();
-        return ['.mp4', '.avi', '.wmv'].includes(`.${extension}`);
-      });
+      // Récupérez tous les éléments du dossier
+      for await (const [name, handle] of folderHandle.entries()) {
+        entries.push({ name, handle });
+      }
 
-      // Filtrer les fichiers par extension pour la liste de sélection des bases de données
-      this.fichiersDatabase = listeFichiers.filter(fichier => {
-        const extension = fichier.split('.').pop().toLowerCase();
-        return ['.sqlite3', '.sqlite', '.database'].includes(`.${extension}`);
-      });
+      // Utilisez l'API resolve pour obtenir le chemin relatif du dossier
+      const pathDetails = await folderHandle.resolve(entries.map(entry => entry.name));
+      return pathDetails.relativePath;
     },
     ChargerFichier() {
-      // Logique de chargement du fichier
-      if (this.fichiersVideoSelectionnee) {
-        const cheminComplet = `/chemin/du/dossier/${this.fichiersVideoSelectionnee}`;
-        // Ajoutez ici la logique pour charger le fichier, par exemple afficher la vidéo
-        console.log(`Chargement du fichier vidéo : ${cheminComplet}`);
-      }
 
-      if (this.fichierDatabaseSelectionnee) {
-        const cheminDatabaseComplet = `/chemin/du/dossier/${this.fichierDatabaseSelectionnee}`;
-        // Ajoutez ici la logique pour charger le fichier de base de données
-        console.log(`Chargement du fichier de base de données : ${cheminDatabaseComplet}`);
-      }
     },
     importerUneVideo(){
 
@@ -130,6 +137,15 @@ export default {
 
 
 <style lang="scss" scoped>
+
+.NomDeLaPage{
+  text-align: center;
+        margin: 10px auto 10px auto;
+        width: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        color: lightgray;
+    }    
+
 #SelectionRepertoireSection {
   margin: auto auto;
   max-width: 860px;
@@ -187,7 +203,6 @@ export default {
 
 /* Style pour le bouton Charger */
 .SelectionRepertoireSection button {
-  background-color: #3498db; /* Couleur de fond du bouton */
   color: #ffffff; /* Couleur du texte du bouton */
   border: none;
   padding: 10px 15px;

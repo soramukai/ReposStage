@@ -1,174 +1,333 @@
 <template>
-    <div id="GestionModificationLVA">
-
+    <div id="pageModificationLVA">
         <div>
-            <v-card class="titre" readonly><h1>{{ titre }}</h1></v-card>
-
-            <v-row id="recapitulatif" v-if="elementPresent.length > 0">
-            <v-col v-for="(element, index) in elementPresent" :key="index" cols="4">
-            <v-list-item>
-                <v-list-item-content>
-                <v-list-item-title>{{ element }}</v-list-item-title>
-                </v-list-item-content>
-            </v-list-item>
-            </v-col>
+            <!-- Titre de la page definit dynamiquement via une props envoyé depuis la page "EcranGestionSousTitre" -->
+            <v-card 
+                class="NomDeLaPage" 
+                readonly>
+                <h1>
+                    {{ NomDeLaPage }}
+                </h1>
+            </v-card>
+            <!-- Panneau récapitulatif contenant les elements de la Table de base de donnée associer à la Page-->
+            <v-row>
+                <v-col>
+                    <v-list
+                        class="listeRecapitulative"
+                        :items="ElementPrincipalListe"
+                        :item-title="TitreElementPrincipal"
+                        dense>
+                    </v-list>
+                </v-col>
             </v-row>
         </div>
-
-        <div>
-            <div id="elementCreation">
-                <div class="creationModificationSuppression">
-                    <v-list-subheader class="descriptif">Saisir le nom d'un(e) {{ titre }}</v-list-subheader>
-                    <v-text-field></v-text-field>
+        <!-- Gestion des  elements suivant: Champs de champsDeSaisie, bouton créer et la liste d'élements en relation avec la table de base de donnée principale de la page-->
+        <div 
+            id="sectionCreation">
+            <div 
+                id="SousSectionCreation">
+                <div 
+                    id="champsDeSaisie">
+                    <!-- Label du champs de saisie -->
+                    <v-list-subheader 
+                        class="labelDesInput">
+                            Saisir le nom d'un(e) {{ NomDeLaPage }}
+                    </v-list-subheader>
+                    <!-- Champs de saisie pour l'utilisateur -->
+                    <v-text-field 
+                        class="input"
+                        v-model="texteCreation">
+                    </v-text-field>
                 </div>
-
-                <div class="creationModificationSuppression">
-                    <v-btn class="bouton">Créer</v-btn>
-
+                <!-- Liste des elements en relation avec la table principale de la page ex: La relation de elementFacultatif d'une version -->
+                <div id="elementFacultatif">
+                    <!-- Label de la liste d'elements facultative 
+                        Si la table de donnée principale ne contient pas de relation vers une autre table, alors cette section ne sera pas visible 
+                    -->
+                    <v-list-subheader 
+                        v-if="ElementFacultatifAffichageActif"
+                        class="labelDesInput">
+                            Sellectionner une {{LabelElementFacultatif}}
+                    </v-list-subheader>
+                    <!-- Liste des elements en relation avec la table de donnée principale -->
+                    <v-select 
+                        v-if="ElementFacultatifAffichageActif"
+                        class="input"
+                        v-model="ElementFacultatifSelectionne"
+                        :items="ElementFacultatifListe"
+                        :item-title="TitreElementFacultatif"
+                        :item-value="ValeurElementFacultatif">
+                    </v-select>
                 </div>
             </div>
-
+            <!-- Bouton créer qui permet d'ajouter un element a la table charger dans la page
+                Le bouton s'active s'il y a du texte dans le champs de saisie et que la table charger dans la page ne possede pas de relation avec une autre table
+                sinon il faut a la fois qu'il y ai du texte dans le champ de saisie et qu'un element present dans la liste facultative soit selectionée
+            -->
+            <div class="boutonInteractionBaseDeDonnee">
+                <v-btn 
+                    @click="creationLVA"
+                    :disabled="(texteCreation.length==0 || ElementFacultatifAffichageActif) && (texteCreation.length==0 || ElementFacultatifSelectionne=='')"           
+                    variant="tonal"     
+                    class="bouton">Créer
+                </v-btn>
+            </div>
+        </div>
+        <!-- Section de Modification -->
+        <div>
             <div id="elementModification">
-                <div class="creationModificationSuppression">
-                    <v-list-subheader class="descriptif">Sellectionner un(e) {{ titre }}</v-list-subheader>
-                    <v-select class="vla"
-                    v-model="elementSelectionnee"
-                    :items="elementPresent"
-                    label="Sélectionnez un fichier vidéo"
+                <div class="boutonInteractionBaseDeDonnee">
+                    <!-- Label de la liste -->
+                    <v-list-subheader class="labelDesInput">Sellectionner un(e) {{ NomDeLaPage }}</v-list-subheader>
+                    <!-- Liste des elements de la table de donnée principale de la page --> 
+                    <v-select 
+                        class="input"
+                        v-model="ElementPrincipalSelectionne"
+                        :items="ElementPrincipalListe"
+                        :item-title="TitreElementPrincipal"
+                        :item-value="ValeurElementPrincipal"
                     ></v-select>
-                    <v-btn class="bouton retour">Retour</v-btn>
+                    <!-- Router permetant de revenir sur la page de gestion des sous-titres bindé sur le bouton "Retour" -->
+                    <router-link class="route" to="/gestion-sous-Titre">
+                        <v-btn class="bouton optionProjet retour" variant="tonal">Retour</v-btn>
+                    </router-link>
                 </div>
-                
-                <div class="creationModificationSuppression">
-                    <v-btn class="bouton">Modifier</v-btn>
-                    <v-btn class="bouton supprimer">Supprimer</v-btn>
+                <!-- Bouton Modifier et Supprimer -->
+                <div class="boutonInteractionBaseDeDonnee">
+                    <!-- Bouton Modifier 
+                        Le bouton s'active a minima s'il y a du texte dans le champs de saisie et qu'un element de la liste principale est selectionné
+                        sinon il faut à la fois qu'il y ai un element present dans la liste principale qui soit selectionée et qu'un element de la liste facultative qui n'est pas deja en relation avec l'element principal soit sélectionnée
+                    -->
+                    <v-btn 
+                        variant="tonal"
+                        :disabled="(ElementPrincipalSelectionne=='' || texteCreation.length==0) && !modificationOK"
+                        class="bouton"
+                        @click="modificationLVA">
+                            Modifier
+                    </v-btn>
+                    <!-- Bouton Supprimer -->
+                    <v-btn 
+                        variant="tonal" 
+                        :disabled="!ElementPrincipalSelectionne" 
+                        class="bouton supprimer"
+                        @click="suppressionLVA">
+                            Supprimer
+                    </v-btn>
                 </div>
             </div>
         </div>
-        
-        <div>
-
-        </div>
-
     </div>
 </template>
 
 <script>
 export default {
     data(){
+        // Variable de la page necessaire a la generation/gestion dynamique des elements
         return{
-            titre : "Titre",
-            elementPresent : [],
-            elementSelectionnee:""
+            NomDeLaPage : "",
+            texteCreation:"",
+
+            //Variable en rapport à la liste d'element principale
+            ElementPrincipalListe : [],
+            ElementPrincipalSelectionne:"",
+            TitreElementPrincipal:"",
+            ValeurElementPrincipal:"",
+
+            //Variable en rapport à la liste d'element facultative
+            LabelElementFacultatif:"",
+            ElementFacultatifListe:[],
+            ElementFacultatifAffichageActif:false,
+            ElementFacultatifSelectionne:"",
+            TitreElementFacultatif:"",
+            ValeurElementFacultatif:"",
+            modificationOK:false,
+            
+            //Commande IPC
+            ipcCharger:"electron:charger",
+            ipcCreer:"electron:creer",
+            ipcModifier:"electron:modifier",
+            ipcSupprimer:"electron:supprimer",
         }
     },
     methods:{
-        recuperationDonneesLVA(){
-            this.elementPresent=["Francais","Anglais","Japonais","Espagnole","Allemand","Italien"]
+        // Fonction qui permet de configurer la page et de charger les donnée
+        // !Voir pour optimiser! Ce switch case permet de configurer la page en fonction du props recu
+        async recuperationDonneesLVA(){
+            switch(this.NomDeLaPage){
+                case "Langue":
+                    this.TitreElementPrincipal="langue_nom"
+                    this.ValeurElementPrincipal="langue_id"
+                    break
+                case "Version":
+                    this.LabelElementFacultatif ="Langue"
+                    this.TitreElementPrincipal="version_nom"
+                    this.ValeurElementPrincipal="version_id"
+                    this.TitreElementFacultatif="langue_nom"
+                    this.ValeurElementFacultatif="langue_id"
+                    this.ElementFacultatifAffichageActif=true
+                    this.modificationOK=false
+                    this.ElementFacultatifListe = await window.electron.ipcRenderer.invoke('electron:chargerLangue')    
+                    break
+                case "Personnage":
+                    this.LabelElementFacultatif ="Couleur"
+                    this.TitreElementPrincipal="personnage_nom"
+                    this.ValeurElementPrincipal="personnage_id"
+                    this.TitreElementFacultatif="couleur_nom"
+                    this.ValeurElementFacultatif="couleur_id"
+                    this.ElementFacultatifAffichageActif=true
+                    this.modificationOK=false
+                    this.ElementFacultatifListe = await window.electron.ipcRenderer.invoke('electron:chargerCouleur')
+                    break
+                default:
+                    console.log("probleme")
+            }
+            this.ElementPrincipalListe = await window.electron.ipcRenderer.invoke(this.ipcCharger+this.NomDeLaPage)
         },
-        creationLVA(){
-
+        // Fonction qui permet de formater un JSON a envoyer dans une commande IPC afin d'effectuer une requette à la base de donnée
+        async creationJson(){
+            return{
+                "id":-1,
+                "nom":this.texteCreation,
+                "autre":this.ElementFacultatifSelectionne
+            }
         },
-        modificationLVA(){
-
+        // Fonction qui permet de faire une requette de creation à la base de donnée via une commande IPC
+        async creationLVA(){
+            await window.electron.ipcRenderer.send(this.ipcCreer+this.NomDeLaPage,await this.creationJson())
+            location.reload();
         },
-        suppressionLVA(){
-
+        // Fonction qui permet de faire une requette de modification à la base de donnée via une commande IPC
+        async modificationLVA(){     
+            await window.electron.ipcRenderer.send(this.ipcModifier+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJson())
+            location.reload();
         },
-        retourSelectionRepertoire(){
-
+        // Fonction qui permet de faire une requette de suppression à la base de donnée via une commande IPC
+        async suppressionLVA(){
+            await window.electron.ipcRenderer.send(this.ipcSupprimer+this.NomDeLaPage,this.ElementPrincipalSelectionne)
+            location.reload();
         }
     },
-    mounted(){
-        this.titre="Langue"
-        this.recuperationDonneesLVA();
-    }
+    watch:{
+        // Detection de changement de valeur de la selection de la liste des elements principaux
+        async ElementPrincipalSelectionne(){
+            //Permet de recuperer et pres-selectionner l'element facultatif en relation avec l'element principale selectionnée
+            if(this.ElementFacultatifAffichageActif && this.ElementPrincipalSelectionne!="")
+            {
+                let entiteeNom = this.LabelElementFacultatif.toLowerCase()
+                const elementPrincipal = await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)
+                const elementFacultatif = await this.ElementFacultatifListe.find(ef=>ef[this.ValeurElementFacultatif]==elementPrincipal[entiteeNom][this.ValeurElementFacultatif])
+                this.ElementFacultatifSelectionne=elementFacultatif[this.ValeurElementFacultatif]
+            }
+        },
+        // Detection de changement de valeur de la selection de la liste des elements facultatifs
+        async ElementFacultatifSelectionne(){
+            //Permet de conditionner la possibilité d'appuyer sur le bouton modifier
+            if(this.ElementFacultatifAffichageActif)
+            {
+                const valeurEF=this.ElementFacultatifSelectionne
+                const valeurEP= this.ElementPrincipalSelectionne!=""? await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)[this.LabelElementFacultatif.toLowerCase()][this.ValeurElementFacultatif]:valeurEF
+                if(valeurEF!=valeurEP){
+                    this.modificationOK=true
+                }
+                else{
+                    this.modificationOK=false
+                }
+                console.log((this.ElementPrincipalSelectionne=='' || this.texteCreation.length==0) && !this.modificationOK)
+            }
+            else{
+                this.modificationOK=false
+            }
+        }
+    },
+    created() {
+        // Recuperation de la prop et assignation de celle ci a la variable 'NomDeLaPage'
+        const prop1 = this.$route.query.prop1;
+        if (prop1 !== undefined) {
+            this.NomDeLaPage=prop1
+            this.recuperationDonneesLVA()
+        } else {
+            console.error('Prop1 est undefined.');
+        }
+    },
 }
 </script>
 
 <style lang="scss" scoped>
-#GestionModificationLVA {
-  margin: auto auto;
-  max-width: 860px;
-  text-align: center;
+#pageModificationLVA {
+    margin: auto auto;
+    max-width: 860px;
+    text-align: center;
+    .NomDeLaPage{
+        margin: 10px auto 10px auto;
+        width: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        color: lightgray;
+    }    
+    .listeRecapitulative{
+    display: flex;
+    flex-wrap: wrap
+    }
+    #sectionCreation{
+        display: flex;
+        flex-direction: row;
+        #SousSectionCreation{
+            width: 70%;
+            display: flex;
+            #champsDeSaisie{
+                width: 60%;
+                margin: 0.5em 1em 0 0;
+            }
+            #elementFacultatif{
+                width: 40%;
+                margin: 0.5em 0 0 0;
+            }
+        }
+        #btnCreer{
+                width: 30%;
+        }
+    }
+    #elementModification{
+        display: flex;  
+    }
 } 
-.titre{
-    margin: 10px auto 10px auto;
-    width: 50%;
-    background-color: rgba(0, 0, 0, 0.1);
-    color: lightgray;
-
-}
-
-.container .titre{
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #d1d1d1; /* Bordure */
-  border-radius: 8px; /* Coins arrondis */
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Ombre */
-  padding: 15px; /* Espacement intérieur */
-  margin: 15px; /* Marge extérieure */
-  background-color: #f8f8f8; /* Couleur de fond */
-  transition: border-color 0.3s ease; /* Transition de la couleur de la bordure */
-}
-
-#recapitulatif{
-  margin: 5px;
-  background-color: #f8f8f8;
-}
-#elementCreation{
-    display: flex;
-}
-
-#elementModification{
-    display: flex;
-}
-.creationModificationSuppression:nth-child(1){
+.boutonInteractionBaseDeDonnee:nth-child(1){
     display: flex;
     flex-direction: column;
     width: 75%;
     margin: 10px 10px 0 0;
+    .route{
+        color: #86a5b1;
+        text-align: start;
+        .retour{
+            width: 35%;
+        }
+    }
 }
-.creationModificationSuppression:nth-child(2){
+.boutonInteractionBaseDeDonnee:nth-child(2){
     display: flex;
     flex-direction: column;
     margin: 3em 0 0 3em;
     width: 25%;
 }
-.bouton{
-    height: 4em !important;
-    margin: 0 0 10px 0;
+.labelDesInput{
+    color: lightgray;
 }
-.retour{
-    width: 30%;
+.input{
+    height: 4.5em;
+}
+#elementCreation{
+    display: flex;;
+}
+.bouton{
+    height: 3em !important;
+    margin: 0 0 10px 0;
 }
 .supprimer{
     margin-top: 1em;
     background-color: lightcoral;
 }   
-.container:hover {
-  border-color: #3498db; /* Couleur de la bordure lorsqu'on survole */
-}
-
-
-/* Style pour le bouton Charger */
-.GestionModificationLVA button {
-  background-color: #3498db; /* Couleur de fond du bouton */
-  color: #ffffff; /* Couleur du texte du bouton */
-  border: none;
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease; /* Transition de la couleur de fond */
-}
-
-.GestionModificationLVA button:disabled {
-  background-color: #bdc3c7; /* Couleur de fond du bouton désactivé */
-  cursor: not-allowed;
-}
-
-.GestionModificationLVA button:hover:enabled {
-  background-color: #2980b9; /* Couleur de fond du bouton lorsqu'on survole */
-}
-
+.supprimer:hover{
+    margin-top: 1em;
+    background-color: coral;
+}   
 </style>
