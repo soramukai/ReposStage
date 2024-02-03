@@ -1,16 +1,16 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow,ipcMain  } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import ipcVideo from './IPC/ipcVideo.ts';
 import IpcDb from './IPC/IpcDb.ts';
-import ipcRoute from './IPC/ipcRoute.ts'
-
+import ipcRepertoire from './IPC/ipcRepertoire.ts'
 import  dbConnection  from './Class/dbConnection.ts';
+
+let mainWindow:BrowserWindow
 
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -41,6 +41,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+
 }
 
 // This method will be called when Electron has finished
@@ -58,10 +60,10 @@ app.whenReady().then(() => {
   })
 
   createWindow()
-  dbConnection.initializeDatabase()
-  IpcDb.initialize()
-  ipcVideo.initialize()
-  ipcRoute.initialize()
+  dbConnection.initialisationBaseDeDonnee()
+  IpcDb.initialisation()
+  ipcRepertoire.initialisation(mainWindow)
+
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -80,5 +82,5 @@ app.on('window-all-closed', () => {
 })
 
 process.on('exit', () => {
-  dbConnection.closeDatabaseConnection();
+  dbConnection.fermetureConnectionBaseDeDonnee();
 });

@@ -9,7 +9,7 @@ export default class Repertoire {
         this.urlDeLaVideo=_urlVideo
         this.urlDeLaBaseDeDonnée=_urlBaseDeDonnee
     }
-    recupererInstanceDuRepertoire(_urlRepertoire:string,_urlVideo:string,_urlBaseDeDonnee:string){
+    recupererInstanceDuRepertoire(_urlRepertoire:string="",_urlVideo:string="",_urlBaseDeDonnee:string=""){
         if (!Repertoire.repertoire) {
             Repertoire.repertoire = new Repertoire(_urlRepertoire, _urlVideo, _urlBaseDeDonnee);
         }
@@ -18,19 +18,19 @@ export default class Repertoire {
     recupererUrlRepertoire(){
         return this.urlDuRepertoire
     }
-    enregistrerUrlRepertoire(_urlRepertoire:string){
+    modifierUrlRepertoire(_urlRepertoire:string){
         this.urlDuRepertoire=_urlRepertoire
     }
     recupererUrlVideo(){
         return this.urlDeLaVideo
     }
-    enregistrerUrlVideo(_urlVideo:string){
+    modifierUrlVideo(_urlVideo:string){
         this.urlDeLaVideo=_urlVideo
     }
     recupererUrlBaseDeDonnee(){
         return this.urlDeLaBaseDeDonnée
     }
-    enregistrerUrlBaseDeDonnee(_urlBaseDeDonnee:string){
+    modifierUrlBaseDeDonnee(_urlBaseDeDonnee:string){
         this.urlDeLaBaseDeDonnée=_urlBaseDeDonnee
     }
 }

@@ -9,8 +9,10 @@ export default class dbConnection {
 
     static dataSource: DataSource;
 
-    static async initializeDatabase() {
+    static async initialisationBaseDeDonnee() {
+        
         try {
+            
             dbConnection.dataSource = new DataSource({
                 type: 'sqlite',
                 database: 'src/main/Entitee/subtitle.db',
@@ -30,7 +32,7 @@ export default class dbConnection {
         }
     }
 
-    static async closeDatabaseConnection() {
+    static async fermetureConnectionBaseDeDonnee() {
         try {
             await dbConnection.dataSource.destroy();
             console.log('Connexion à la base de données fermée avec succès.');

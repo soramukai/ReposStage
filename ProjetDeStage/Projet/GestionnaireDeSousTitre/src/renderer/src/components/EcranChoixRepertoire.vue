@@ -10,8 +10,9 @@
   <div id="SelectionRepertoireSection">
     <div class="SelectionRepertoireSection">
       <!-- Bouton de sélection du dossier -->
-      <v-btn variant="tonal" class="elementSelectionRepertoire" @click="SelectionDuRepertoire">Sélectionner un dossier</v-btn>
+      <v-btn variant="tonal" @click="selectFolder">Sélectionner un dossier</v-btn>
       
+
       <!-- Nom du dossier sélectionné -->
       <v-list-subheader class="descriptif">Contenue du reperto
         ire</v-list-subheader>
@@ -84,34 +85,19 @@ export default {
     };
   },
   methods: {
-    async SelectionDuRepertoire() {
-      try {
-        // Demandez à l'utilisateur de sélectionner un dossier
-        const folderHandle = await window.showDirectoryPicker();
-        
-        // Obtenez le chemin relatif du dossier
-        const relativePath = await this.getRelativePath(folderHandle);
-
-        // Construisez l'URL en utilisant le chemin relatif
-        const folderURL = new URL(relativePath, 'file://').href;
-
-        // Affichez l'URL dans la console
-        console.log("URL du dossier sélectionné :", folderURL);
-      } catch (error) {
-        console.error('Erreur lors de la sélection du dossier :', error);
-      }
-    },
-    async getRelativePath(folderHandle) {
-      const entries = [];
-
-      // Récupérez tous les éléments du dossier
-      for await (const [name, handle] of folderHandle.entries()) {
-        entries.push({ name, handle });
-      }
-
-      // Utilisez l'API resolve pour obtenir le chemin relatif du dossier
-      const pathDetails = await folderHandle.resolve(entries.map(entry => entry.name));
-      return pathDetails.relativePath;
+    // selectFolder() {
+    //   const folderInput = document.getElementById('folderInput');
+    //   folderInput.click();
+    // },
+    // handleFolderSelection(event) {
+    //   const folderPath = event;
+    //   console.log('Chemin complet du dossier sélectionné :', folderPath);
+    // },
+    async selectFolder() {
+      window.electron.ipcRenderer.send('electron:selectionDossier');
+      window.electron.ipcRenderer.on('electron:renvoyerUrlDossier', (event, folderPath) => {
+        console.log('Chemin complet du dossier sélectionné côté serveur :', folderPath);
+      });
     },
     ChargerFichier() {
 

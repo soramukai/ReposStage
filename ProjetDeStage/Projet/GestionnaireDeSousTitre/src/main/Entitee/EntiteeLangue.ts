@@ -1,7 +1,6 @@
 //@ts-nocheck
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany  } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column  } from 'typeorm';
 import dbConnection from '../Class/dbConnection.ts';
-
 import { json } from 'stream/consumers';
 
 @Entity()
@@ -15,16 +14,16 @@ export class EntiteeLangue{
 }
 export async function creerLangue(_json: JSON){
     const table = dbConnection.dataSource.getRepository(EntiteeLangue)
-    let check = await table.find({where:{
+    let langue = await table.find({where:{
         langue_nom:_json.nom,
     }})
-    if(check.length==0){
-        const lang = new EntiteeLangue();
+    if(langue.length==0){
+        langue = new EntiteeLangue();
         if(_json.id!=-1){
-            lang.langue_id=_json.id
+            langue.langue_id=_json.id
         }
-        lang.langue_nom=_json.nom;
-        await table.save(lang)
+        langue.langue_nom=_json.nom;
+        await table.save(langue)
         console.log("La ligne à été sauvegardé")
     }
     else{

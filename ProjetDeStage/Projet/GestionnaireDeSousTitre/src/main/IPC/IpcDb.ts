@@ -7,7 +7,7 @@ import { creerCouleur, chargerCouleur } from '../Entitee/EntiteeCouleur'
 
 export default class IpcDb {
 
-  static initialize(): void {
+  static initialisation(): void {
     //////////////////Fonction de comunication avec la base de donné avec typeorm//////////////////
     //Personnage
     ipcMain.on('electron:creerPersonnage',async (event, _json:JSON)=>{

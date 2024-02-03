@@ -436,7 +436,6 @@ export default {
     },
     methods:{
       ouvrirNouvelleFenetre(page) {
-        //window.electron.ipcRenderer.send('electron:gestionLangue',"Langue")
         this.$router.push({
           path: '/modification-lva',
           query: {
