@@ -10,7 +10,7 @@
             </div>
 
             <div class="videoGestionSousTitre">
-                <v-text-field readonly="" class="gridArea" variant="outlined"> Mode {{ mode }}</v-text-field>
+                <v-text-field readonly class="gridArea" variant="outlined"> Mode {{ mode }}</v-text-field>
 
                 <v-select class="gridArea" variant="outlined" label="Langue" v-model="langueSelectionne" :items="langues"></v-select>
                 <router-link @click="() => ouvrirNouvelleFenetre('Langue')" class="gridArea gestionLVA" to="/modification-lva">
@@ -68,7 +68,8 @@
     
 </template>
 
-<script>
+<script lang="ts">
+//@ts-nocheck
 export default {
     data(){
         return{
@@ -597,10 +598,6 @@ export default {
         display: flex;
         flex-direction: row;
         border: 1px double   #86a5b1;
-
-        .videoGestionSousTitre{
-
-        }
         .videoGestionSousTitre:nth-child(1){
             margin: auto;
 
@@ -642,10 +639,6 @@ export default {
                 .gridArea:nth-child(15){grid-area: zone15;}
                 .gridArea:nth-child(16){grid-area: zone16;}
         }
-
-    }
-
-    .ligneSelectionne{
 
     }
     .section:nth-child(2){

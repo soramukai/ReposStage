@@ -14,20 +14,21 @@
       
 
       <!-- Nom du dossier sélectionné -->
-      <v-list-subheader class="descriptif">Contenue du reperto
-        ire</v-list-subheader>
-      <v-text-field readonly>{{ nomDuDossier }}</v-text-field>
+      <v-list-subheader class="descriptif">
+        Chemin du repertoire
+      </v-list-subheader>
+      <v-text-field readonly>
+        {{ cheminDuRepertoire }}
+      </v-text-field>
 
       <!-- Récapitulatif de tous les éléments du dossier -->
-      <v-row id="recapitulatif" v-if="fichiersDuRepertoire.length > 0">
-        <v-col v-for="(fichier, index) in fichiersDuRepertoire" :key="index" cols="4">
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>{{ fichier }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-col>
-      </v-row>
+      <v-list
+        :items="recapitulatif"
+        class="recapitulatif"
+        variant="outlined"
+        >
+        
+      </v-list>
     </div>
 
     <div class="SelectionRepertoireSection">
@@ -37,7 +38,6 @@
         <v-select class="video"
           v-model="fichiersVideoSelectionnee"
           :items="fichiersVideo"
-          label="Sélectionnez un fichier vidéo"
         ></v-select>
         
         <!--Bouton d'importation de video-->
@@ -53,7 +53,6 @@
         <v-select class="BDD"
           v-model="fichierDatabaseSelectionnee"
           :items="fichiersDatabase"
-          label="Sélectionnez un fichier de base de données"
         ></v-select>
         <v-list-subheader class="descriptif">Importer une BDD</v-list-subheader>
         <v-file-input class="BDD"></v-file-input>
@@ -70,33 +69,34 @@
       </router-link>
     </div>
   </div>
+  <video id="myVideo" width="640" height="360" controls>
+  Your browser does not support the video tag.
+</video>
 </template>
 
 <script lang="ts">
+
+import {ContenueRepertoire} from '../class/ContenueRepertoire'
 export default {
   data() {
     return {
-      nomDuDossier: "",
+      extensionsVideoAcceptees:['.mp4', '.mkv', '.avi', '.wmv', '.flv', '.mpeg'],
+      extensionsDatabaseAcceptees:['.db', '.sqlite', '.sqlite3'],
+      contenueRepertoire:ContenueRepertoire.recupererInstance(),
+      recapitulatif:[],
+      cheminDuRepertoire: "",
       fichiersDuRepertoire: [], // Mettez ici les éléments statiques ou initialisez-le avec les éléments réels après la sélection du dossier
       fichiersVideo: [],
       fichiersDatabase: [],
-      fichiersVideoSelectionnee: null,
-      fichierDatabaseSelectionnee: null,
+      fichiersVideoSelectionnee: [],
+      fichierDatabaseSelectionnee: [],
     };
   },
   methods: {
-    // selectFolder() {
-    //   const folderInput = document.getElementById('folderInput');
-    //   folderInput.click();
-    // },
-    // handleFolderSelection(event) {
-    //   const folderPath = event;
-    //   console.log('Chemin complet du dossier sélectionné :', folderPath);
-    // },
     async selectFolder() {
       window.electron.ipcRenderer.send('electron:selectionDossier');
-      window.electron.ipcRenderer.on('electron:renvoyerUrlDossier', (event, folderPath) => {
-        console.log('Chemin complet du dossier sélectionné côté serveur :', folderPath);
+      window.electron.ipcRenderer.on('electron:renvoyerUrlDossier', async (event, folderPath) => {
+        this.cheminDuRepertoire = await folderPath;
       });
     },
     ChargerFichier() {
@@ -116,14 +116,61 @@ export default {
     },
     supprimerUnElement(){
       
+    },
+    filtrerParExtension(_fichiers: string[],_extensionsAcceptees:string[]): string[] {
+
+      const fichers = _fichiers.filter((fichier) => {
+        const extension = fichier.toLowerCase().slice((Math.max(0, fichier.lastIndexOf(".")) || Infinity) + 1);
+        // Vérifie si l'extension est dans la liste des extensions acceptées
+        return _extensionsAcceptees.includes('.' + extension);
+      });
+
+      return fichers;
     }
   },
+  watch:{
+    async cheminDuRepertoire(){
+      window.electron.ipcRenderer.send('electron:recapitulatifRepertoire',this.cheminDuRepertoire)
+
+      window.electron.ipcRenderer.on('electron:contenueDossier', async (event,_dossiers,_fichiers)=>{
+
+        this.contenueRepertoire.enregistrerInstance(_dossiers,_fichiers)
+        const contenueReacp = _dossiers
+        contenueReacp.push(..._fichiers)
+        this.recapitulatif = contenueReacp
+
+        this.fichiersVideo= this.filtrerParExtension(_fichiers,this.extensionsVideoAcceptees)
+        this.fichiersDatabase=this.fichiersDatabase?? this.filtrerParExtension(_fichiers,this.extensionsDatabaseAcceptees)
+
+        
+      })
+    },
+    fichiersVideoSelectionnee(){
+      // Chemin du fichier
+      let filePath = this.cheminDuRepertoire + '\\' + this.fichiersVideoSelectionnee;
+      // Envoyer le chemin du fichier au processus principal
+
+
+      // Recevoir la réponse du processus principal
+        const videoElement = document.getElementById('myVideo');
+      // Utilisation du protocole personnalisé 'atom' dans l'URL de la vidéo
+        videoElement.src = 'atom://'+filePath;
+
+    }
+
+  }
 };
 </script>
 
 
 <style lang="scss" scoped>
-
+.recapitulatif{
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 350px;
+  padding: 5px;
+  justify-content: space-around;
+}
 .NomDeLaPage{
   text-align: center;
         margin: 10px auto 10px auto;

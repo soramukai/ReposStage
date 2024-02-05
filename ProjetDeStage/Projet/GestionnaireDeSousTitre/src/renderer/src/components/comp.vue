@@ -2,7 +2,7 @@
   <v-btn class="btnTest" @click="test">{{texte}}</v-btn>
 </template>
 
-<script>
+<script lang="ts">
 export default {
 data(){
     return{

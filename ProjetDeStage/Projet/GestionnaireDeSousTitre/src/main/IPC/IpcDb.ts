@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { ipcMain } from "electron";
 import { creerPersonnage,chargerPersonnage, modifierPersonnage, supprimerPersonnage } from "../Entitee/EntiteePersonnage";
 import { creerLangue, chargerLangue, modifierLangue, supprimerLangue } from "../Entitee/EntiteeLangue";

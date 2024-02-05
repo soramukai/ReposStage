@@ -119,7 +119,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
     data(){
         // Variable de la page necessaire a la generation/gestion dynamique des elements
@@ -129,7 +129,7 @@ export default {
 
             //Variable en rapport à la liste d'element principale
             ElementPrincipalListe : [],
-            ElementPrincipalSelectionne:"",
+            ElementPrincipalSelectionne:""||undefined,
             TitreElementPrincipal:"",
             ValeurElementPrincipal:"",
 
@@ -137,7 +137,7 @@ export default {
             LabelElementFacultatif:"",
             ElementFacultatifListe:[],
             ElementFacultatifAffichageActif:false,
-            ElementFacultatifSelectionne:"",
+            ElementFacultatifSelectionne:""||undefined,
             TitreElementFacultatif:"",
             ValeurElementFacultatif:"",
             modificationOK:false,
@@ -219,8 +219,13 @@ export default {
             {
                 let entiteeNom = this.LabelElementFacultatif.toLowerCase()
                 const elementPrincipal = await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)
-                const elementFacultatif = await this.ElementFacultatifListe.find(ef=>ef[this.ValeurElementFacultatif]==elementPrincipal[entiteeNom][this.ValeurElementFacultatif])
-                this.ElementFacultatifSelectionne=elementFacultatif[this.ValeurElementFacultatif]
+                let elementFacultatif=""||undefined;
+                if(elementPrincipal!=undefined){
+                    elementFacultatif = await this.ElementFacultatifListe.find(ef=>ef[this.ValeurElementFacultatif]==elementPrincipal[entiteeNom][this.ValeurElementFacultatif])
+                }
+                if(elementFacultatif!=undefined){
+                    this.ElementFacultatifSelectionne=elementFacultatif[this.ValeurElementFacultatif]
+                }
             }
         },
         // Detection de changement de valeur de la selection de la liste des elements facultatifs
@@ -229,7 +234,20 @@ export default {
             if(this.ElementFacultatifAffichageActif)
             {
                 const valeurEF=this.ElementFacultatifSelectionne
-                const valeurEP= this.ElementPrincipalSelectionne!=""? await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)[this.LabelElementFacultatif.toLowerCase()][this.ValeurElementFacultatif]:valeurEF
+                let valeurEP=""||undefined;
+                
+                if(this.ElementPrincipalSelectionne!=""){
+                    const liste= await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)||undefined
+                    if(liste!=undefined){
+                        valeurEP = liste[this.LabelElementFacultatif.toLowerCase()][this.ValeurElementFacultatif]
+                    }
+                    else{
+                        valeurEP=valeurEF
+                    }
+                }
+                else{
+                    valeurEP=valeurEF
+                }
                 if(valeurEF!=valeurEP){
                     this.modificationOK=true
                 }
@@ -246,7 +264,7 @@ export default {
     created() {
         // Recuperation de la prop et assignation de celle ci a la variable 'NomDeLaPage'
         const prop1 = this.$route.query.prop1;
-        if (prop1 !== undefined) {
+        if (typeof prop1 === 'string') {
             this.NomDeLaPage=prop1
             this.recuperationDonneesLVA()
         } else {
