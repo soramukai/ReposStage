@@ -8,14 +8,14 @@ import { EntiteeCouleur } from '../Entitee/EntiteeCouleur.js';
 export default class dbConnection {
 
     static dataSource: DataSource;
+    static dbOn:boolean = false;
 
-    static async initialisationBaseDeDonnee() {
-        
+    static async initialisationBaseDeDonnee(_path){
         try {
-            
+            console.log("passe par dbConnection.ts")
             dbConnection.dataSource = new DataSource({
                 type: 'sqlite',
-                database: 'src/main/Entitee/subtitle.db',
+                database: _path,
                 synchronize: true,
                 entities: [EntiteePersonnage, EntiteeLangue, EntiteeVersion, EntiteeLigne,EntiteeCouleur],
             });

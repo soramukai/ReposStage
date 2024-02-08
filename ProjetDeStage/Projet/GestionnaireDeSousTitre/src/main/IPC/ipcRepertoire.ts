@@ -2,12 +2,10 @@ import {BrowserWindow, ipcMain } from "electron";
 
 export default class ipcRepertoire {
     static initialisation(_mainWindow:BrowserWindow): void {   
-
     const fs = require('fs');
     const path = require('path');
 
     ipcMain.on('electron:selectionDossier', (event) => {
-      console.log("passe ICI")
       const { dialog } = require('electron');
       dialog.showOpenDialog(_mainWindow, {
         properties: ['openDirectory'],
@@ -18,11 +16,32 @@ export default class ipcRepertoire {
       });
     })
 
-    // ipcMain.on('load-video', (event, filePath) => {
-    //   const fileURL = `file://${path.resolve(filePath)}`;
-    //   _mainWindow.webContents.send('load-video', fileURL);
-    // });
+    ipcMain.on('load-video', (event, _filePath) => {
+      const fileURL = `file://${path.resolve(_filePath)}`;
+      _mainWindow.webContents.send('load-video', fileURL);
+    });
 
+    ipcMain.on('electron:supprimerElement',(event,_filePath)=>{
+      fs.unlink(_filePath, err => {
+        if (err) {
+          console.error('Erreur lors de la suppression du fichier :', err);
+          return;
+        }
+        console.log('Le fichier a été supprimé avec succès.');
+      });
+    })
+
+    ipcMain.on('electron:copierElement',(event,_fichierSource,_cheminDestination)=>{
+
+      fs.copyFile(_fichierSource, _cheminDestination, (err) => {
+        if (err) {
+          console.error("Erreur lors de la copie du fichier :", err);
+          return;
+        }
+        console.log("Le fichier a été copié avec succès.");
+        event.reply('electron:copieSucces')
+      });
+    })
 
     ipcMain.on('electron:recapitulatifRepertoire',(event,_cheminRepertoire:string)=>{
       try {

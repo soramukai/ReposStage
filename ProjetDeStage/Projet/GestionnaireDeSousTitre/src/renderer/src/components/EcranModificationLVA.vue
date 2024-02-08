@@ -88,7 +88,7 @@
                         :item-value="ValeurElementPrincipal"
                     ></v-select>
                     <!-- Router permetant de revenir sur la page de gestion des sous-titres bindé sur le bouton "Retour" -->
-                    <router-link class="route" to="/gestion-sous-Titre">
+                    <router-link class="route" @click="transitVideo" to="/gestion-sous-Titre">
                         <v-btn class="bouton optionProjet retour" variant="tonal">Retour</v-btn>
                     </router-link>
                 </div>
@@ -100,7 +100,7 @@
                     -->
                     <v-btn 
                         variant="tonal"
-                        :disabled="(ElementPrincipalSelectionne=='' || texteCreation.length==0) && !modificationOK"
+                        :disabled="(!ElementPrincipalSelectionne || texteCreation.length==0) && !modificationOK"
                         class="bouton"
                         @click="modificationLVA">
                             Modifier
@@ -147,6 +147,9 @@ export default {
             ipcCreer:"electron:creer",
             ipcModifier:"electron:modifier",
             ipcSupprimer:"electron:supprimer",
+
+            video:"",
+            database:"",
         }
     },
     methods:{
@@ -169,14 +172,14 @@ export default {
                     this.ElementFacultatifListe = await this.chargementLVA("Langue")
                     break
                 case "Personnage":
-                    this.LabelElementFacultatif ="Couleur"
+                    // this.LabelElementFacultatif ="Couleur"
                     this.TitreElementPrincipal="personnage_nom"
                     this.ValeurElementPrincipal="personnage_id"
-                    this.TitreElementFacultatif="couleur_nom"
-                    this.ValeurElementFacultatif="couleur_id"
-                    this.ElementFacultatifAffichageActif=true
-                    this.modificationOK=false
-                    this.ElementFacultatifListe = await this.chargementLVA("Couleur")
+                    // this.TitreElementFacultatif="couleur_nom"
+                    // this.ValeurElementFacultatif="couleur_id"
+                    // this.ElementFacultatifAffichageActif=true
+                    // this.modificationOK=false
+                    // this.ElementFacultatifListe = await this.chargementLVA("Couleur")
                     break
                 default:
                     console.log("probleme")
@@ -209,6 +212,15 @@ export default {
         async suppressionLVA(){
             await window.electron.ipcRenderer.send('electron:supprimer'+this.NomDeLaPage,this.ElementPrincipalSelectionne)
             location.reload();
+        },
+        transitVideo(){
+            this.$router.push({
+            path: '/gestion-sous-titre',
+            query: {
+            propVideo: this.video,
+            propDatabase: this.database,
+        },
+      });
         }
     },
     watch:{
@@ -264,9 +276,21 @@ export default {
     created() {
         // Recuperation de la prop et assignation de celle ci a la variable 'NomDeLaPage'
         const prop1 = this.$route.query.prop1;
+        const propVideo = this.$route.query.propVideo;
+        const propDatabase = this.$route.query.propDatabase;
         if (typeof prop1 === 'string') {
             this.NomDeLaPage=prop1
             this.recuperationDonneesLVA()
+        } else {
+            console.error('Prop1 est undefined.');
+        }
+        if (typeof propVideo === 'string') {
+            this.video=propVideo
+        } else {
+            console.error('Prop1 est undefined.');
+        }
+        if (typeof propDatabase === 'string') {
+            this.database=propDatabase
         } else {
             console.error('Prop1 est undefined.');
         }

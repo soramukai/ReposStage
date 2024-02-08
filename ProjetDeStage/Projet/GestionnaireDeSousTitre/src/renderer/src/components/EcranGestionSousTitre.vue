@@ -4,9 +4,17 @@
             <div class="videoGestionSousTitre">
                 <v-row>
                     <v-col>
-                        <video id="video" :src="cheminDeLaVideo" controls></video>
+                      <video id="video" src="" controls></video>
+                      <!-- <video id="myVideo" :src="cheminDeLaVideo" controls></video> -->
                     </v-col>
                 </v-row>
+                <v-textarea
+                  class="no-resize"
+
+                  variant="outlined"
+                  rows="2"
+                  :no-resize="true">
+                </v-textarea>
             </div>
 
             <div class="videoGestionSousTitre">
@@ -33,7 +41,12 @@
                   <v-btn class="boutonLVA" variant="tonal">Gestion Acteur</v-btn>
                 </router-link>
 
-                <v-textarea class="gridArea" variant="outlined" v-model="texteSousTitre">{{ texteSousTitre }}</v-textarea>
+                <v-textarea 
+                  class="gridArea" 
+                  variant="outlined" 
+                  v-model="texteSousTitre"
+                  rows="3"
+                  :no-resize="true">>{{ texteSousTitre }}</v-textarea>
                 <v-btn class="gridArea" variant="tonal">{{ texteDuMode }}</v-btn>
                 <v-btn class="gridArea" variant="tonal">Copier</v-btn>
                 <v-btn id="supprimer" class="gridArea supprimer" variant="tonal">Supprimer</v-btn>
@@ -49,8 +62,7 @@
                 :items-per-page="itemParPage"
                 show-select
                 @click:row="cliqueLignes"
-                :height="tableHeight"
-            >
+                :height="tableHeight">
             </v-data-table>
         </div>
 
@@ -69,6 +81,7 @@
 </template>
 
 <script lang="ts">
+import dbConnection from 'src/main/Class/dbConnection';
 //@ts-nocheck
 export default {
     data(){
@@ -87,6 +100,7 @@ export default {
             acteurs:[],
             acteurSelectionne:"",
             cheminDeLaVideo:"",
+            cheminDeLaDatabase:"",
             messageInformatif:"",
             texteDuMode:"",
             ligneSelectionnee: [],
@@ -181,256 +195,6 @@ export default {
             zindex: 1,	
             texte: "Hey Comment tu vas l'ami?",	
           },	
-          {	
-            id:	10
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:42',	
-            timeCodeFin: '00:01:48',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
-          },	
-          {	
-            id:	11
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:50',	
-            timeCodeFin: '00:01:55',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
-          },	
-          {	
-            id:	12
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:59',	
-            timeCodeFin: '00:02:04',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
-          },	
-          {	
-            id:	13
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:06',	
-            timeCodeFin: '00:02:08',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "C'est bien ce que je viens de dire",	
-          },	
-          {	
-            id:	14
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:10',	
-            timeCodeFin: '00:02:13',	
-            acteur: 'Boby',	
-	        zindex: 1,
-            texte: 'Toujours dans les magouille... Jhonny',	
-          },	
-          {	
-            id:	15
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:16',	
-            timeCodeFin: '00:02:19',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "On se debrouille comme on peut",	
-          },	
-          {	
-            id:	16
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:36',	
-            timeCodeFin: '00:01:39',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Hey Comment tu vas l'ami?",	
-          },	
-          {	
-            id:	17
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:42',	
-            timeCodeFin: '00:01:48',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
-          },	
-          {	
-            id:	18
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:50',	
-            timeCodeFin: '00:01:55',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
-          },	
-          {	
-            id:	19
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:59',	
-            timeCodeFin: '00:02:04',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
-          },	
-          {	
-            id:	20
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:06',	
-            timeCodeFin: '00:02:08',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "C'est bien ce que je viens de dire",	
-          },	
-          {	
-            id:	21
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:10',	
-            timeCodeFin: '00:02:13',	
-            acteur: 'Boby',	
-	        zindex: 1,
-            texte: 'Toujours dans les magouille... Jhonny',	
-          },	
-          {	
-            id:	22
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:16',	
-            timeCodeFin: '00:02:19',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "On se debrouille comme on peut",	
-          },	
-          {	
-            id:	23
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:36',	
-            timeCodeFin: '00:01:39',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Hey Comment tu vas l'ami?",	
-          },	
-          {	
-            id:	24
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:42',	
-            timeCodeFin: '00:01:48',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
-          },	
-          {	
-            id:	25
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:50',	
-            timeCodeFin: '00:01:55',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
-          },	
-          {	
-            id:	26
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:59',	
-            timeCodeFin: '00:02:04',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
-          },	
-          {	
-            id:	27
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:06',	
-            timeCodeFin: '00:02:08',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "C'est bien ce que je viens de dire",	
-          },	
-          {	
-            id:	28
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:10',	
-            timeCodeFin: '00:02:13',	
-            acteur: 'Boby',	
-	        zindex: 1,
-            texte: 'Toujours dans les magouille... Jhonny',	
-          },	
-          {	
-            id:	29
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:16',	
-            timeCodeFin: '00:02:19',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "On se debrouille comme on peut",	
-          },	
-          {	
-            id:	30
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:36',	
-            timeCodeFin: '00:01:39',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Hey Comment tu vas l'ami?",	
-          },	
-          {	
-            id:	31
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:42',	
-            timeCodeFin: '00:01:48',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
-          },	
-          {	
-            id:	32
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:50',	
-            timeCodeFin: '00:01:55',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
-          },	
-          {	
-            id:	33
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:59',	
-            timeCodeFin: '00:02:04',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
-          },	
-          {	
-            id:	34
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:06',	
-            timeCodeFin: '00:02:08',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "C'est bien ce que je viens de dire",	
-          },
         ],		  
       tableHeight: 450, // Hauteur maximale du tableau en pixels  
         }
@@ -441,6 +205,8 @@ export default {
           path: '/modification-lva',
           query: {
             prop1: page,
+            propVideo: this.cheminDeLaVideo,
+            propDatabase: this.cheminDeLaDatabase,
           },
         });
         
@@ -536,7 +302,6 @@ export default {
         document.querySelector(".v-data-table-footer").innerHTML=""
 
         this.itemParPage=this.items.length
-        this.cheminDeLaVideo="video.mp4"
         this.messageInformatif=""
         this.mode="Creation"
         this.texteDuMode="Créer"
@@ -549,6 +314,11 @@ export default {
             row.textContent=i
             i++
         })
+        document.getElementById('video').src='fichier://'+this.cheminDeLaVideo;
+        if(!await window.electron.ipcRenderer.invoke('electron:dbActive')){
+          await window.electron.ipcRenderer.send('electron:initialiserDatabase', this.cheminDeLaDatabase);
+          await window.electron.ipcRenderer.send('electron:dbSwitchOn')
+        }
     },
     watch:{
         langueSelectionne(){
@@ -561,6 +331,24 @@ export default {
         ligneSelectionnee(){
             this.cliqueCheckBox()
         }
+    },
+    created() {
+      const propVideo = this.$route.query.propVideo;
+      const propDatabase = this.$route.query.propDatabase;
+      
+      console.log("PropVideo après la redirection :", propVideo);
+      console.log("PropDatabase après la redirection :", propDatabase);
+
+      if (typeof propVideo === 'string') {
+        this.cheminDeLaVideo = propVideo;
+      } else {
+        console.error('PropVideo est undefined.');
+      }
+      if (typeof propDatabase === 'string') {
+        this.cheminDeLaDatabase = propDatabase;
+      } else {
+        console.error('PropDatabase est undefined.');
+      }
     },
     computed: {
     },
@@ -605,8 +393,9 @@ export default {
             #video{
                 width: 800px;
                 height: 450px;
-            }
+            }        
         }
+
         .videoGestionSousTitre:nth-child(2){
             width: 100%;
             border: 1px double #86a5b1;

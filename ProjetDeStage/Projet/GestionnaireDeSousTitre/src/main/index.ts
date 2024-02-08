@@ -3,8 +3,10 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import IpcDb from './IPC/IpcDb.ts';
+import ipcFfmpeg from './IPC/ipcFfmpeg.ts';
 import ipcRepertoire from './IPC/ipcRepertoire.ts'
 import  dbConnection  from './Class/dbConnection.ts';
+import protocolFichierLocal from './protocol/protocolFichierLocal.ts';
 
 const path = require('path');
 const url = require('url');
@@ -54,13 +56,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-//___________________________________________________________________
-  protocol.registerFileProtocol('atom', (request, callback) => {
-    const url = request.url.replace('atom://', '');
-    const filePath = path.normalize(decodeURIComponent(url));
-    callback(filePath);
-  });
-  //_______________________________________________________________
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -72,16 +68,12 @@ app.whenReady().then(() => {
   })
 
   createWindow()
-  dbConnection.initialisationBaseDeDonnee()
   IpcDb.initialisation()
   ipcRepertoire.initialisation(mainWindow)
+  protocolFichierLocal.initialisation()
+  ipcFfmpeg.initialisation();
 
-    // Gérer la requête 'load-video'________________________________________________
-    ipcMain.on('load-video', (event, filePath) => {
-      const fileURL = `file://${path.resolve(filePath)}`;
-      mainWindow.webContents.send('load-video', fileURL);
-    });
-//______________________________________________________________________________
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

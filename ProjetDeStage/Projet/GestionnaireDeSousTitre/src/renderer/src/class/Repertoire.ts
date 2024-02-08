@@ -1,4 +1,6 @@
 export default class Repertoire {
+    public fichiers: string[]
+
     private static repertoire: Repertoire | undefined;
     private urlDuRepertoire:string
     private urlDeLaVideo:string
@@ -8,29 +10,40 @@ export default class Repertoire {
         this.urlDuRepertoire=_urlRepertoire
         this.urlDeLaVideo=_urlVideo
         this.urlDeLaBaseDeDonnée=_urlBaseDeDonnee
+        this.fichiers=[]
     }
-    recupererInstanceDuRepertoire(_urlRepertoire:string="",_urlVideo:string="",_urlBaseDeDonnee:string=""){
+
+    public static recupererInstanceDuRepertoire(_urlRepertoire:string="",_urlVideo:string="",_urlBaseDeDonnee:string=""):Repertoire{
         if (!Repertoire.repertoire) {
             Repertoire.repertoire = new Repertoire(_urlRepertoire, _urlVideo, _urlBaseDeDonnee);
         }
         return Repertoire.repertoire;
     }
-    recupererUrlRepertoire(){
+
+    public modifierFichiers(_fichiers:string[]):void{
+        if(Repertoire.repertoire){
+            this.fichiers=_fichiers;
+        }
+    }
+    public recupererFichiers():string[]{
+        return this.fichiers;
+    }
+    public recupererUrlRepertoire():string{
         return this.urlDuRepertoire
     }
-    modifierUrlRepertoire(_urlRepertoire:string){
+    public modifierUrlRepertoire(_urlRepertoire:string):void{
         this.urlDuRepertoire=_urlRepertoire
     }
-    recupererUrlVideo(){
+    public recupererUrlVideo():string{
         return this.urlDeLaVideo
     }
-    modifierUrlVideo(_urlVideo:string){
+    public modifierUrlVideo(_urlVideo:string):void{
         this.urlDeLaVideo=_urlVideo
     }
-    recupererUrlBaseDeDonnee(){
+    public recupererUrlBaseDeDonnee():string{
         return this.urlDeLaBaseDeDonnée
     }
-    modifierUrlBaseDeDonnee(_urlBaseDeDonnee:string){
+    public modifierUrlBaseDeDonnee(_urlBaseDeDonnee:string):void{
         this.urlDeLaBaseDeDonnée=_urlBaseDeDonnee
     }
 }

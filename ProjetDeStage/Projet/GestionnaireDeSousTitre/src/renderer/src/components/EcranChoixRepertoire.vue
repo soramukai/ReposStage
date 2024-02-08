@@ -1,20 +1,28 @@
 <!-- FolderSelectButton.vue -->
 <template>
-    <v-card 
-      class="NomDeLaPage" 
-      readonly>
+  <!-- Titre de la page -->
+  <v-card 
+    class="NomDeLaPage" 
+    readonly>
       <h1>
-          Choix du repertoire
+        Choix du repertoire
       </h1>
   </v-card>
+
+  <!-- Section de selection de dossier et recapitulatif -->
   <div id="SelectionRepertoireSection">
     <div class="SelectionRepertoireSection">
       <!-- Bouton de sélection du dossier -->
-      <v-btn variant="tonal" @click="selectFolder">Sélectionner un dossier</v-btn>
+      <v-btn 
+        variant="tonal" 
+        @click="selectionnerDossier"
+        :disabled="ProgressionConverstion!=''">
+          Sélectionner un dossier
+      </v-btn>
       
 
       <!-- Nom du dossier sélectionné -->
-      <v-list-subheader class="descriptif">
+      <v-list-subheader>
         Chemin du repertoire
       </v-list-subheader>
       <v-text-field readonly>
@@ -25,100 +33,205 @@
       <v-list
         :items="recapitulatif"
         class="recapitulatif"
-        variant="outlined"
-        >
-        
+        variant="outlined">
       </v-list>
     </div>
 
+    <!-- Section de selection de Video -->
     <div class="SelectionRepertoireSection">
       <!-- Liste de sélection pour les vidéos -->
       <div class="fichier">
-        <v-list-subheader class="descriptif">Sellectionner une vidéo</v-list-subheader>
+        <v-list-subheader>
+          Sellectionner une vidéo
+        </v-list-subheader>
         <v-select class="video"
-          v-model="fichiersVideoSelectionnee"
-          :items="fichiersVideo"
-        ></v-select>
+          v-model="fichierVideoSelectionnee"
+          :items="fichiersVideo">
+        </v-select>
         
         <!--Bouton d'importation de video-->
-        <v-list-subheader class="descriptif">Inmporter une Video</v-list-subheader>
-        <v-file-input class="video"></v-file-input>
-        <v-btn variant="tonal" class="video">Convertir</v-btn>
-        <v-btn variant="tonal" class="video">Supprimer</v-btn>
+        <v-list-subheader>
+          Inmporter une Video
+        </v-list-subheader>
+        <v-file-input 
+          class="video"
+          :disabled="cheminDuRepertoire==''|| ProgressionConverstion!=''"
+          v-model="videoAimporter"
+          :accept="extensionsVideoAcceptees">
+        </v-file-input>
+        <v-btn 
+          variant="tonal" 
+          class="video"
+          :disabled="videoAimporter==''|| ProgressionConverstion!=''"
+          @click="()=>copierUnElement(videoAimporter)">
+            Convertir
+        </v-btn>
+        <v-btn 
+          variant="tonal" 
+          class="video"
+          :disabled="fichierVideoSelectionnee==''|| ProgressionConverstion!=''"
+          @click="()=>{supprimerUnElement(repertoireDeTravail.recupererUrlVideo());fichierVideoSelectionnee=''}">
+            Supprimer
+        </v-btn>
+        <!-- <div 
+          v-if="ProgressionConverstion !== ''" 
+          class="progress-container">
+            <v-list-subheader>
+                Conversion de la Video
+            </v-list-subheader>
+            <progress 
+              class="progress-bar" 
+              :value="ProgressionConverstion" 
+              max="100">
+            </progress>
+            <span 
+              class="progress-label">
+                {{ ProgressionConverstion }}%
+            </span>
+        </div> -->
       </div>
-      
-      <!-- Liste de sélection pour les bases de données -->
+       
       <div class="fichier">
-        <v-list-subheader class="descriptif">Sellectionner une BDD</v-list-subheader>
-        <v-select class="BDD"
-          v-model="fichierDatabaseSelectionnee"
-          :items="fichiersDatabase"
-        ></v-select>
-        <v-list-subheader class="descriptif">Importer une BDD</v-list-subheader>
-        <v-file-input class="BDD"></v-file-input>
-        <v-btn variant="tonal" class="BDD">Copier</v-btn>
-        <v-btn variant="tonal" class="BDD">Supprimer</v-btn>
+        <img
+          v-if="cheminDuRepertoire!=''"
+          id="rafraichir" 
+          src="../img/rafraichir.png" 
+          alt="" 
+          tabindex="0"
+          v-on:keydown.space.prevent="actualiserImageRafraichir('presse')"
+          v-on:keyup.space="actualiserImageRafraichir('pressePas')"
+          :onmouseover="()=>actualiserImageRafraichir('hover')" 
+          :onmouseout="()=>actualiserImageRafraichir('normal')"
+          :onmouseup="()=>actualiserImageRafraichir('cliquePas')"
+          :onmousedown="()=>actualiserImageRafraichir('clique')">
+      </div>
+
+      <!-- Section de selection de Base de données -->
+      <div 
+        class="fichier">
+          <v-list-subheader>
+            Sellectionner une BDD
+          </v-list-subheader>
+          <v-select 
+            class="BDD"
+            v-model="fichierDatabaseSelectionnee"
+            :items="fichiersDatabase">
+          </v-select>
+          <v-list-subheader>
+            Importer une BDD
+          </v-list-subheader>
+          <v-file-input 
+            class="BDD"
+            :disabled="cheminDuRepertoire==''"
+            v-model="databaseAImporter"
+            :accept="extensionsDatabaseAcceptees">
+          </v-file-input>
+          <v-btn 
+            variant="tonal" 
+            class="BDD"
+            :disabled="databaseAImporter==''"
+            @click="()=>copierUnElement(databaseAImporter)">
+              Copier
+          </v-btn>
+          <v-btn 
+            variant="tonal" 
+            class="BDD"
+            :disabled="fichierDatabaseSelectionnee==''"
+            @click="()=>{supprimerUnElement(repertoireDeTravail.recupererUrlBaseDeDonnee());fichierDatabaseSelectionnee=''}">
+              Supprimer
+          </v-btn>
       </div>
     </div>
 
-    <div class="SelectionRepertoireSection">
-      <router-link class="route" to="/gestion-sous-titre">
-      <!-- Bouton "Charger" -->
-      <!--<v-btn @click="ChargerFichier" :disabled="!fichiersVideoSelectionnee">Charger</v-btn>-->
-        <v-btn variant="tonal" @click="ChargerFichier" >Charger</v-btn>
-      </router-link>
+    <!-- Bouton charger de la page -->
+    <div 
+      id="boutonCharger" 
+      class="SelectionRepertoireSection">
+        <v-btn id="v-boutonCharger" variant="tonal" :disabled="!fichierVideoSelectionnee || ProgressionConverstion!=''">
+          Charger
+        </v-btn>
     </div>
   </div>
-  <video id="myVideo" width="640" height="360" controls>
-  Your browser does not support the video tag.
-</video>
 </template>
 
 <script lang="ts">
-
-import {ContenueRepertoire} from '../class/ContenueRepertoire'
+import Repertoire from '../class/Repertoire';
 export default {
   data() {
     return {
+      ProgressionConverstion:'',
+      // Liste des extenssion accepté pour les videos et databases
       extensionsVideoAcceptees:['.mp4', '.mkv', '.avi', '.wmv', '.flv', '.mpeg'],
       extensionsDatabaseAcceptees:['.db', '.sqlite', '.sqlite3'],
-      contenueRepertoire:ContenueRepertoire.recupererInstance(),
-      recapitulatif:[],
+      // Instance de la class Repertoir
+      repertoireDeTravail:Repertoire.recupererInstanceDuRepertoire(),
       cheminDuRepertoire: "",
-      fichiersDuRepertoire: [], // Mettez ici les éléments statiques ou initialisez-le avec les éléments réels après la sélection du dossier
+      // fichier a importer
+      videoAimporter:"",
+      databaseAImporter:"",
+      // Liste avec le contenue du dossier 
+      recapitulatif:[],
       fichiersVideo: [],
       fichiersDatabase: [],
-      fichiersVideoSelectionnee: [],
-      fichierDatabaseSelectionnee: [],
+      fichierVideoSelectionnee: "",
+      fichierDatabaseSelectionnee: "",
     };
   },
   methods: {
-    async selectFolder() {
+    async selectionnerDossier() {
+      this.cheminDuRepertoire="En Selection"
       window.electron.ipcRenderer.send('electron:selectionDossier');
       window.electron.ipcRenderer.on('electron:renvoyerUrlDossier', async (event, folderPath) => {
+        this.fichierDatabaseSelectionnee=""
+        this.fichierVideoSelectionnee=""
+        this.repertoireDeTravail.modifierUrlRepertoire(folderPath!=""?folderPath:"")
         this.cheminDuRepertoire = await folderPath;
       });
     },
+    chargerRepertoire(){
+      if(this.cheminDuRepertoire!="En Selection" && this.cheminDuRepertoire!=""){
+        window.electron.ipcRenderer.send('electron:recapitulatifRepertoire',this.cheminDuRepertoire)
+
+        window.electron.ipcRenderer.on('electron:contenueDossier', async (event,_dossiers,_fichiers)=>{
+
+          this.repertoireDeTravail.modifierFichiers(_fichiers)
+          const contenueReacp = _dossiers
+          contenueReacp.push(...this.repertoireDeTravail.recupererFichiers())
+          this.recapitulatif = contenueReacp
+
+          this.fichiersVideo = this.filtrerParExtension(this.repertoireDeTravail.recupererFichiers(),this.extensionsVideoAcceptees)
+          this.fichiersDatabase = this.filtrerParExtension(this.repertoireDeTravail.recupererFichiers(),this.extensionsDatabaseAcceptees)
+        })
+      }else{
+        this.cheminDuRepertoire= this.repertoireDeTravail.recupererUrlRepertoire()!=""? this.repertoireDeTravail.recupererUrlRepertoire():"";
+      }
+    },
     ChargerFichier() {
-
+      if(this.fichierDatabaseSelectionnee==""){
+          this.repertoireDeTravail.modifierUrlBaseDeDonnee(this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+"subtitleParDefault.db")
+      }
+      console.log(this.repertoireDeTravail.recupererUrlBaseDeDonnee())
+      this.$router.push({
+        path: '/gestion-sous-titre',
+        query: {
+          propVideo: this.repertoireDeTravail.recupererUrlVideo(),
+          propDatabase: this.repertoireDeTravail.recupererUrlBaseDeDonnee(),
+        },
+      });
     },
-    importerUneVideo(){
-
+    /*convertirUneVideo(){
+      const nomDeLaVideo= this.videoAimporter[0].name
+      window.electron.ipcRenderer.send('electron:SendVideo', this.videoAimporter[0].path,this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+nomDeLaVideo);
+    },*/
+    async copierUnElement(_elementACopier){
+      const nomElementACopier= _elementACopier[0].name
+      await window.electron.ipcRenderer.send('electron:copierElement',_elementACopier[0].path,this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+nomElementACopier)
     },
-    convertirUneVideo(){
-
-    },
-    importerUneBDD(){
-
-    },
-    copierUneBDD(){
-
-    },
-    supprimerUnElement(){
-      
+    async supprimerUnElement(_fichierASupprimer){
+      await window.electron.ipcRenderer.send('electron:supprimerElement',_fichierASupprimer)
+      this.chargerRepertoire()
     },
     filtrerParExtension(_fichiers: string[],_extensionsAcceptees:string[]): string[] {
-
       const fichers = _fichiers.filter((fichier) => {
         const extension = fichier.toLowerCase().slice((Math.max(0, fichier.lastIndexOf(".")) || Infinity) + 1);
         // Vérifie si l'extension est dans la liste des extensions acceptées
@@ -126,130 +239,186 @@ export default {
       });
 
       return fichers;
+    },
+    actualiserImageRafraichir(_etat) {
+      let img = document.getElementById('rafraichir');  
+      if(this.cheminDuRepertoire!=''){
+        switch(_etat){
+            case 'presse':
+              img.src = './src/img/rafraichirClique.png'
+              break
+            case 'pressePas':
+              img.src = '../src/img/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
+              this.chargerRepertoire()
+              break
+            case 'clique':
+              img.src = './src/img/rafraichirClique.png'
+              break
+            case 'cliquePas':
+              if(this.survoleImageRafraichir(img)){
+                img.src = './src/img/rafraichirHover.png'; // Changez l'image lors du survol
+                this.chargerRepertoire()
+              }else{
+                img.src = '../src/img/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
+              }
+              break
+            case 'normal':
+              img.src = '../src/img/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
+              break
+            case 'hover':
+              img.src = './src/img/rafraichirHover.png'; // Changez l'image lors du survol
+              break
+          }
+        }else{
+          img.src = './src/img/rafraichirDesactive.png'
+        }
+    },
+    survoleImageRafraichir(element) {
+    let bounding = element.getBoundingClientRect();
+    return bounding.top <= event.clientY && event.clientY <= bounding.bottom
+        && bounding.left <= event.clientX && event.clientX <= bounding.right;
+    },
+    actualiserContenue(){
+      this.chargerRepertoire()
     }
+  },
+  async mounted(){
+    await window.electron.ipcRenderer.send('electron:dbSwitchOff')
+    /*window.electron.ipcRenderer.on('electron:progressPercent', (event, progress) => {
+      this.ProgressionConverstion = progress;
+    });*/
+    window.electron.ipcRenderer.on('electron:copieSucces',(event)=>{
+      this.chargerRepertoire()
+    })
   },
   watch:{
     async cheminDuRepertoire(){
-      window.electron.ipcRenderer.send('electron:recapitulatifRepertoire',this.cheminDuRepertoire)
-
-      window.electron.ipcRenderer.on('electron:contenueDossier', async (event,_dossiers,_fichiers)=>{
-
-        this.contenueRepertoire.enregistrerInstance(_dossiers,_fichiers)
-        const contenueReacp = _dossiers
-        contenueReacp.push(..._fichiers)
-        this.recapitulatif = contenueReacp
-
-        this.fichiersVideo= this.filtrerParExtension(_fichiers,this.extensionsVideoAcceptees)
-        this.fichiersDatabase=this.fichiersDatabase?? this.filtrerParExtension(_fichiers,this.extensionsDatabaseAcceptees)
-
-        
-      })
+      this.chargerRepertoire()
     },
-    fichiersVideoSelectionnee(){
+    /*ProgressionConverstion(){
+      if(this.ProgressionConverstion=="100"){
+        this.ProgressionConverstion=''
+        this.chargerRepertoire()
+      }
+    },*/
+    fichierVideoSelectionnee(){
       // Chemin du fichier
-      let filePath = this.cheminDuRepertoire + '\\' + this.fichiersVideoSelectionnee;
-      // Envoyer le chemin du fichier au processus principal
+      this.repertoireDeTravail.modifierUrlVideo(this.cheminDuRepertoire + '\\' + this.fichierVideoSelectionnee);
 
+      if(this.fichierVideoSelectionnee!=""){
+        let routage = document.getElementById('boutonCharger')
+        let vbouton= document.getElementById('v-boutonCharger')
+        let router = document.createElement("router-link")
+        
+        router.className="route"
+        router.addEventListener('click',this.ChargerFichier)
+        router.setAttribute('to',"/gestion-sous-titre")
+        router.appendChild(vbouton);
 
-      // Recevoir la réponse du processus principal
-        const videoElement = document.getElementById('myVideo');
-      // Utilisation du protocole personnalisé 'atom' dans l'URL de la vidéo
-        videoElement.src = 'atom://'+filePath;
+        routage.innerHTML="";
+        routage.appendChild(router)
+      }
+      else{
+        this.repertoireDeTravail.modifierUrlVideo("")
+      }
 
-    }
-
+    },
+    fichierDatabaseSelectionnee(){
+      // Chemin du fichier
+      if(this.fichierDatabaseSelectionnee!=""){
+        this.repertoireDeTravail.modifierUrlBaseDeDonnee(this.cheminDuRepertoire+ "\\"+ this.fichierDatabaseSelectionnee)
+      }
+      else{
+        this.repertoireDeTravail.modifierUrlBaseDeDonnee(this.cheminDuRepertoire+ "\\"+"SousTitreParDefaut.db")
+      }
+    },
   }
 };
 </script>
 
-
 <style lang="scss" scoped>
-.recapitulatif{
-  display: flex;
-  flex-wrap: wrap;
-  max-height: 350px;
-  padding: 5px;
-  justify-content: space-around;
-}
-.NomDeLaPage{
-  text-align: center;
-        margin: 10px auto 10px auto;
-        width: 50%;
-        background-color: rgba(0, 0, 0, 0.1);
-        color: lightgray;
-    }    
+  .NomDeLaPage{
+    text-align: center;
+    margin: 10px auto 10px auto;
+    width: 50%;
+    background-color: rgba(0, 0, 0, 0.1);
+    color: lightgray;
+  }
 
-#SelectionRepertoireSection {
-  margin: auto auto;
-  max-width: 860px;
-  text-align: center;
-}
+  #SelectionRepertoireSection {
+    margin: auto auto;
+    max-width: 860px;
+    text-align: center;
+    .SelectionRepertoireSection {
+      width: 100%;
+      margin: 15px auto; /* Marge entre les sections */
+      button {
+        color: #ffffff; /* Couleur du texte du bouton */
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease; /* Transition de la couleur de fond */
+      }
 
-.container {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #d1d1d1; /* Bordure */
-  border-radius: 8px; /* Coins arrondis */
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Ombre */
-  padding: 15px; /* Espacement intérieur */
-  margin: 15px; /* Marge extérieure */
-  background-color: #f8f8f8; /* Couleur de fond */
-  transition: border-color 0.3s ease; /* Transition de la couleur de la bordure */
-}
-.elementSelectionRepertoire{
-  margin: 0 0 10px 0;
-}
-#recapitulatif{
-  margin: 5px;
-  background-color: #f8f8f8;
-}
-.container:hover {
-  border-color: #3498db; /* Couleur de la bordure lorsqu'on survole */
-}
+      button:disabled {
+        background-color: #bdc3c7; /* Couleur de fond du bouton désactivé */
+        cursor: not-allowed;
+      }
 
-.SelectionRepertoireSection {
-  width: 100%;
-  margin: 15px auto; /* Marge entre les sections */
-}
+      button:hover:enabled {
+        background-color: #2980b9; /* Couleur de fond du bouton lorsqu'on survole */
+      }
+    }
+    .SelectionRepertoireSection:nth-child(1) {
+      .recapitulatif{
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 350px;
+        padding: 5px;
+        justify-content: space-around;
+      }
+    }
+    .SelectionRepertoireSection:nth-child(2) {
+      display: flex;
+      justify-content: space-between; /* Centrer horizontalement */
+      .fichier:nth-child(1) {
+        width: 100%;
+        margin: 0 10% 0 0;
+        .video{
+          margin: 0 0 10px 0;
+          width: 100%;
+        }
+      }
+      .fichier:nth-child(2) {
+        width: 10%;
+        margin: 4% 0 0 0;
+        #rafraichir{
+          width: 100%;
+        }
+      }
+      .fichier:nth-child(3) {
+        width: 100%;
+        margin: 0 0 0 10%;
+        .BDD{
+          margin: 0 0 10px 0;
+          width: 100%;
+        }
+      }
+    }
+  }
+  /*.progress-container {
+    text-align: center;
+    margin-top: 20px;
+    .progress-bar {
+      width: 100%;
+    }
 
-.fichier:nth-child(1) {
-  width: 100%;
-  margin: 0 10% 0 0;
-}
-.fichier:nth-child(2) {
-  width: 100%;
-  margin: 0 0 0 10%;
-}
-.video{
-  margin: 0 0 10px 0;
-  width: 100%;
-}
-.BDD{
-  margin: 0 0 10px 0;
-  width: 100%;
-}
-
-.SelectionRepertoireSection:nth-child(2) {
-  display: flex;
-  justify-content: space-between; /* Centrer horizontalement */
-}
-
-/* Style pour le bouton Charger */
-.SelectionRepertoireSection button {
-  color: #ffffff; /* Couleur du texte du bouton */
-  border: none;
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease; /* Transition de la couleur de fond */
-}
-
-.SelectionRepertoireSection button:disabled {
-  background-color: #bdc3c7; /* Couleur de fond du bouton désactivé */
-  cursor: not-allowed;
-}
-
-.SelectionRepertoireSection button:hover:enabled {
-  background-color: #2980b9; /* Couleur de fond du bouton lorsqu'on survole */
-}
+    .progress-label {
+      margin-top: 10px;
+      display: inline-block;
+      font-size: 16px;
+      font-weight: bold;
+    }
+  }*/
 </style>
