@@ -37,15 +37,14 @@ export class EntiteeLigne {
     @Column({ nullable: true })
     personnage_id: number|undefined;
 
-    @ManyToOne(() => EntiteeVersion, version => version.lignes)
+    @ManyToOne(() => EntiteeVersion, version => version.lignes,{onDelete:"CASCADE"})
     @JoinColumn({ name: 'version_id' })
     version: EntiteeVersion;
 
-    @ManyToOne(() => EntiteePersonnage, personnage => personnage.lignes)
+    @ManyToOne(() => EntiteePersonnage, personnage => personnage.lignes,{onDelete:"CASCADE"})
     @JoinColumn({ name: 'personnage_id' })
     personnage: EntiteePersonnage;
 }
-
 
 export async function creerLigne(_json: JSON){
 
@@ -60,7 +59,6 @@ export async function creerLigne(_json: JSON){
 
     if(check.length==0){
         const ligne = new EntiteeLigne();
-        console.log(_json)
         if(_json.id==-1){
             ligne.ligne_id = await getMax('ligne_id')
         }else{
@@ -82,12 +80,11 @@ export async function creerLigne(_json: JSON){
         ligne.personnage = personnageRef[0];
 
         ligne.ligne_id_interne = await getMax('ligne_id_interne')
-        console.log(ligne)
         await table.save(ligne);
         console.log("La ligne à été sauvegardée")
     }
     else {
-        console.log("La ligne existe déjà")
+        console.error("La ligne existe déjà")
     }
 }
 
@@ -131,9 +128,7 @@ export async function modifierLigne(_uid:number,_json:JSON) {
 
 
         if(check && newLigne.ligne_id_interne!=check.ligne_id_interne){
-            console.log("aaaaa")
             newLigne.ligne_id= await getMax('ligne_id')
-            console.log(await getMax('ligne_id'))
         }
         const ligneASupp = await table.findOne({where: {
             ligne_id_interne:_uid,
@@ -150,14 +145,6 @@ export async function modifierLigne(_uid:number,_json:JSON) {
             newLigne.personnage = await personnageRef[0];
         }
 
-        console.log("----------------------------------------------------------------------------")
-        console.log(ligneASupp)
-        console.log("________________________")
-        console.log(oldId)
-        console.log("________________________")
-        console.log(newLigne)
-        console.log("----------------------------------------------------------------------------")
-
         if(ligneASupp){
             await table.remove(ligneASupp)
         }
@@ -167,7 +154,7 @@ export async function modifierLigne(_uid:number,_json:JSON) {
 
     }
     else {
-        console.log("La ligne existe déjà")
+        console.error("La ligne existe déjà")
     }
 }
 
@@ -180,7 +167,43 @@ export async function supprimerLigne(_idASupprimer){
         console.log("La ligne a été supprimé")
     }
     else{
-        console.log("La ligne n'existe pas")
+        console.error("La ligne n'existe pas")
+    }
+}
+
+export async function dupliquerLigne(_uid){
+    const table = dbConnection.dataSource.getRepository(EntiteeLigne)
+
+    let check = await table.find({where: {
+        ligne_id_interne: _uid
+    }})
+
+    if(check.length>0){
+        check=check[0]
+        const ligne = new EntiteeLigne();
+        ligne.ligne_id = await getMax('ligne_id')
+        ligne.ligne_timecode_Debut = check.ligne_timecode_Debut;
+        ligne.ligne_timecode_Fin = check.ligne_timecode_Fin;
+        ligne.ligne_z_index = check.ligne_z_index;
+        ligne.ligne_texte = check.ligne_texte;
+        ligne.ligne_couleur = check.ligne_couleur;
+        ligne.ligne_couleur_hexa = check.ligne_couleur_hexa;
+
+        const version = dbConnection.dataSource.getRepository(EntiteeVersion)
+        const versionRef = await version.find({ where: { version_id: check.version_id } })
+
+        const personnage = dbConnection.dataSource.getRepository(EntiteePersonnage)
+        const personnageRef = await personnage.find({ where: { personnage_id: check.personnage_id } })
+
+        ligne.version = versionRef[0];
+        ligne.personnage = personnageRef[0]
+
+        ligne.ligne_id_interne = await getMax('ligne_id_interne')
+        await table.save(ligne);
+        console.log("La ligne à été sauvegardée")
+    }
+    else {
+        console.error("La ligne existe déjà")
     }
 }
 

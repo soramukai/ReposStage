@@ -210,7 +210,6 @@ export default {
       if(this.fichierDatabaseSelectionnee==""){
           this.repertoireDeTravail.modifierUrlBaseDeDonnee(this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+"subtitleParDefault.db")
       }
-      console.log(this.repertoireDeTravail.recupererUrlBaseDeDonnee())
       this.$router.push({
         path: '/gestion-sous-titre',
         query: {

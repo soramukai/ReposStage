@@ -27,7 +27,7 @@ export async function creerCouleur(_json: JSON){
         console.log("La ligne à été sauvegardé")
     }
     else{
-        console.log("La ligne existe deja")
+        console.error("La ligne existe deja")
     }
 }
 export async function chargerCouleur(){

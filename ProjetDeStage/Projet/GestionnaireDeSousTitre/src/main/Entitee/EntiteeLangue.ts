@@ -26,7 +26,7 @@ export async function creerLangue(_json: JSON){
         console.log("La ligne à été sauvegardé")
     }
     else{
-        console.log("La ligne existe deja")
+        console.error("La ligne existe deja")
     }
 }
 export async function chargerLangue(){
@@ -36,7 +36,6 @@ export async function chargerLangue(){
 
 export async function modifierLangue(_idAModifier:number,_json:JSON){
 
-    console.log(_json.nom)
     const table = dbConnection.dataSource.getRepository(EntiteeLangue)
     let check = await table.findOne({where:{
         langue_id:_idAModifier,
@@ -49,7 +48,7 @@ export async function modifierLangue(_idAModifier:number,_json:JSON){
         console.log("La ligne à été modifié")
     }
     else{
-        console.log("La ligne n'existe pas")
+        console.error("La ligne n'existe pas")
     }
 }
 
@@ -62,6 +61,6 @@ export async function supprimerLangue(_idASupprimer:number){
         console.log("La ligne a été supprimé")
     }
     else{
-        console.log("La ligne n'existe pas")
+        console.error("La ligne n'existe pas")
     }
 }

@@ -14,6 +14,40 @@
                       <!-- <video id="myVideo" :src="cheminDeLaVideo" controls></video> -->
                     </v-col>
                 </v-row>
+                <div id="selectionAffichage">
+                  <v-select 
+                    class="selectionAffichage"
+                    multiple=""
+                    variant="outlined"
+                    label="Langue"
+                    :items="languesVisible"
+                    v-model="languesVisibleSelectionne"
+                    item-title="langue_nom"
+                    item-value="langue_id">
+                  </v-select>
+                  <v-select 
+                    class="selectionAffichage"
+                    multiple=""
+                    variant="outlined"
+                    label="Version"
+                    :items="versionsVisible"
+                    v-model="versionsVisibleSelectionne"
+                    item-title="version_nom"
+                    item-value="version_id">
+                  </v-select>
+                  <v-select 
+                    class="selectionAffichage"
+                    multiple=""
+                    variant="outlined"
+                    label="Acteur"
+                    :items="personnagesVisible"
+                    v-model="personnagesVisibleSelectionne"
+                    item-title="personnage_nom"
+                    item-value="personnage_id">
+                  </v-select>
+                </div>
+                <!-- REMPLACER la textarea par une dive, et y mettre une classe qui fera un overflow en display flex et je pourrais y appliquer les couleur pour le texte
+                Je pourrais aussi plus facilement penser au defilmement du texte -->
                 <v-textarea
                   class="no-resize"
                   readonly=""
@@ -170,7 +204,8 @@
                 </v-btn>
                 <v-btn 
                   class="gridArea" 
-                  variant="tonal">
+                  variant="tonal"
+                  @click="dupliquerLigne">
                     Copier
                 </v-btn>
                 <v-btn 
@@ -251,7 +286,7 @@ export default {
           idSelectionne:"",
           personnageSelectionne:"",
           timecodeDebutSelectionne:"00:00:00,000",
-          timecodeFinSelectionne:"00:00:00,000",
+          timecodeFinSelectionne:"00:00:00,001",
           zIndexSelectionne:1,
           couleurSelectionne:"",
           texteSelectionne:"",
@@ -266,6 +301,13 @@ export default {
           personnages:[],
           couleurs:[],      
           tableauSousTitre:[],  
+          //tableau de preference de lecture
+          languesVisible:[],
+          versionsVisible:[],
+          personnagesVisible:[],
+          languesVisibleSelectionne:[],
+          versionsVisibleSelectionne:[],
+          personnagesVisibleSelectionne:[],
           //proprieter du tableau
           enteteTableau:[
             {title:'UID',value:'ligne_id_interne',sortable:true},
@@ -306,13 +348,66 @@ export default {
         }
     },
     methods:{
+      async filtrerTableau(){
+        console.log("ee")
+        let tableauFiltre3=[]
+        let tableauFiltre1=[]
+        let tableauFiltre2=[]
+        if(this.languesVisibleSelectionne.length>0){
+          this.languesVisibleSelectionne.forEach(async lv=>{
+            this.tableauSousTitre.forEach(async st=>{
+              if(lv==st.version.langue.langue_id){
+                tableauFiltre1.push(st)
+              }
+            })
+          })
+        }else{
+          tableauFiltre1=this.tableauSousTitre
+        }
+        if(this.versionsVisibleSelectionne.length>0){
+          this.versionsVisibleSelectionne.forEach(async vv=>{
+            tableauFiltre1.forEach(async st=>{
+              if(vv==st.version.version_id){
+                tableauFiltre2.push(st)
+              }
+            })
+          })
+        }else{
+          tableauFiltre2=tableauFiltre1
+        }
+        if(this.personnagesVisibleSelectionne.length>0){
+          this.personnagesVisibleSelectionne.forEach(async pv=>{
+            tableauFiltre2.forEach(async st=>{
+              if(pv==st.personnage.personnage_id){
+                tableauFiltre3.push(st)
+              }
+            })
+          })
+        }else{
+          tableauFiltre3=tableauFiltre2
+        }
+        this.tableauSousTitre=tableauFiltre3
+      },
       async actualiserTableau(){
         this.tableauSousTitre= await window.electron.ipcRenderer.invoke('electron:chargerLigne')
+        let tab = this.tableauSousTitre
+        tab.sort((a, b) => {
+
+          // Tri par le champ 'name' par défaut
+          return a.ligne_id_interne - b.ligne_id_interne;
+        })
         this.itemParPage=this.tableauSousTitre.length
+        this.ligneSelectionnee=[]
+        this.filtrerTableau()
       },
       async creationModification(){
         let ligne=null
-        let couleur=this.couleurs.find(c=>c.code == this.couleurSelectionne)
+        let couleurNom=""
+        let couleurCode=""
+        if(this.couleurSelectionne!=''&&this.couleurSelectionne!=undefined){
+          couleurCode=this.couleurSelectionne
+          couleurNom=this.couleurs.find(c=>c.code==this.couleurSelectionne).nom
+        }
         ligne=new Lignes(
             this.idSelectionne==""?undefined:this.idSelectionne,
             this.versionSelectionne,
@@ -321,10 +416,9 @@ export default {
             this.zIndexSelectionne,
             this.texteSelectionne,
             this.personnageSelectionne,
-            couleur.nom==""?"par defaut":couleur.nom,
-            couleur.code
+            couleurNom,
+            couleurCode
           )
-          console.log(couleur.nom==""?"par defaut":couleur.nom,)
         if(this.mode=='Creation'){
           await window.electron.ipcRenderer.send('electron:creerLigne',ligne)
         }else{
@@ -337,7 +431,6 @@ export default {
       async supprimerSousTitre(){
         await this.ligneSelectionnee.forEach(async i=>{
           await window.electron.ipcRenderer.send('electron:supprimerSousTitre',i)
-          console.log(i)
         })
         this.tableauSousTitre=[]
         this.ligneSelectionnee=[]
@@ -404,15 +497,16 @@ export default {
         this.versionSelectionne=''
         const langue = this.langues.find(langue=>langue.langue_id==this.langueSelectionne)
         if(this.langueSelectionne!=""){
-          this.versions=[''].concat(await window.electron.ipcRenderer.invoke('electron:chargerVersionDeLangue',langue.langue_nom))
+          this.versions=await window.electron.ipcRenderer.invoke('electron:chargerVersionDeLangue',langue.langue_nom)  
         }else{
           this.versions=[];
         }
-        this.versionSelectionne=this.versions.length>0?this.versions[1].version_id:''
+        this.versionSelectionne=this.versions.length>0?this.versions[0].version_id:''
       },
       async remplirChamps(item){
 
           this.langueSelectionne=await item.version.langue.langue_id
+          await new Promise(resolve => setTimeout(resolve, 10));
           this.versionSelectionne=await item.version.version_id
           this.personnageSelectionne=await item.personnage==null?"":item.personnage.personnage_id
           // this.acteurSelectionne=item.acteur
@@ -429,13 +523,13 @@ export default {
           this.versionSelectionne=''
         }else{
           this.langueSelectionne=this.langues.length>1?this.langues[1].langue_id:''
-          this.versionSelectionne=this.versions.length>0?this.versions[1].version_id:''
+          this.versionSelectionne=this.versions.length>0?this.versions[0].version_id:''
         }
 
           //this.acteurSelectionne=""
           this.idSelectionne=""
-          this.timecodeDebutSelectionne="00:00:00,000"
-          this.timecodeFinSelectionne="00:00:00,000"
+          this.timecodeDebutSelectionne=this.ligneSelectionnee.length>1?'':"00:00:00,000"
+          this.timecodeFinSelectionne=this.ligneSelectionnee.length>1?'':"00:00:00,001"
           this.texteSelectionne=""
           this.zIndexSelectionne=1
           this.couleurSelectionne=this.couleurs[0].code
@@ -476,7 +570,6 @@ export default {
       },
       async miseAJoursEcran(){
         //Si une seul ligne est selectionné
-        //console.log(this.tableauSousTitre.find(x=>x.ligne_id==this.ligneSelectionnee[0]))
         this.ligneSelectionnee.length===1?await this.remplirChamps(this.tableauSousTitre.find(x=>x.ligne_id_interne==this.ligneSelectionnee[0])):await this.viderChamps()
         if(this.ligneSelectionnee.length>=1){
           this.mode="Modification"
@@ -538,9 +631,13 @@ export default {
         this.itemParPage=this.tableauSousTitre.length
         this.couleurSelectionne=this.couleurs[0].code
         this.viderChamps()
+        this.languesVisible= await window.electron.ipcRenderer.invoke('electron:chargerLangue')
+        this.versionsVisible= await window.electron.ipcRenderer.invoke('electron:chargerVersion')
+        this.personnagesVisible= await window.electron.ipcRenderer.invoke('electron:chargerPersonnage')
       },
       async verifierDoublon(){
-        if(this.ligneSelectionnee.length==1 && this.ligneSelectionnee[0] == this.idSelectionne){
+
+        if(this.ligneSelectionnee.length==1 && await this.tableauSousTitre.find(l=>{ return l.ligne_id_interne==this.ligneSelectionnee}).ligne_id == this.idSelectionne){
           this.doublon=false
         }
         else{
@@ -551,43 +648,52 @@ export default {
             }
           });
         }
+
       },
-      async filtrerTableau(){
-        this.tableauSousTitre=[]
+      async dupliquerLigne(){
+        // this.ligneSelectionnee.forEach(async l=>{
+        //   setTimeout(async ()=>{await window.electron.ipcRenderer.send('electron:dupliquerLigne',l)},1000)
+        //   this.traiterLignesAvecDelai(l)
+        // })
+        for(let  l of this.ligneSelectionnee){
+          await new Promise(resolve => setTimeout(resolve, 10));
+          await window.electron.ipcRenderer.send('electron:dupliquerLigne', l);
+        }
+        this.ligneSelectionnee=[]
+        await this.miseAJoursEcran()
+        await this.actualiserTableau()
       },
       async test(){
-        this.tableauSousTitre=await  window.electron.ipcRenderer.invoke('electron:chargerLigne')
-        console.log(this.tableauSousTitre)
-      }
 
-  },  
-  async mounted(){
+      }
+    },  
+      async mounted(){
       //Sert a enlever l'outil de pagination du v-data-table
       document.querySelector(".v-data-table-footer").innerHTML=""
       //Force toute les donnée a s'afficher dans le tableau
       await this.initialisationProps()
     },
     watch:{
-        langueSelectionne(){
-            this.changerVersion()
-        },
-        mode(){
-            this.activationBouton()
-        }
-        ,
-        ligneSelectionnee(){
-            this.cliqueCheckBox()
-        },
-        idSelectionne(){
-          this.verifierDoublon()
-        },
-        versionSelectionne(){
-          this.verifierDoublon()
-        },
-        personnageSelectionne(){
+      langueSelectionne(){
+          this.changerVersion()
+      },
+      mode(){
+          this.activationBouton()
+      },
+      ligneSelectionnee(){
+          this.cliqueCheckBox()
+      },
+      idSelectionne(){
+        this.verifierDoublon()
+      },
+      versionSelectionne(){
+        this.verifierDoublon()
+      },
+      personnageSelectionne(){
 
-        },
-        timecodeDebutSelectionne(){
+      },
+      timecodeDebutSelectionne(){
+        if(this.creationModificationNOk=this.ligneSelectionnee.length<1){          
           const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
           if (regex.test(this.timecodeDebutSelectionne)) {
             if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
@@ -624,8 +730,13 @@ export default {
           } else {
             this.creationModificationNOk=true
           }
-        },
-        timecodeFinSelectionne(){
+        }else{
+          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
+          this.creationModificationNOk=!(regex.test(this.timecodeDebutSelectionne)||this.timecodeDebutSelectionne=='')
+        }
+      },
+      timecodeFinSelectionne(){
+        if(this.creationModificationNOk=this.ligneSelectionnee.length<1){     
           const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
           if (regex.test(this.timecodeFinSelectionne)) {
             if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
@@ -669,13 +780,28 @@ export default {
             this.timecodeFinSelectionne="00:00:00,001"
           }
           this.creationModificationNOk=false
-        }else{
-          if(this.timecodeFinSelectionne=="100:00:00,000"){
-            this.timecodeDebutSelectionne="00:00:00,000"
-            this.timecodeFinSelectionne="00:00:00,001"
+          }else{
+            if(this.timecodeFinSelectionne=="100:00:00,000"){
+              this.timecodeDebutSelectionne="00:00:00,000"
+              this.timecodeFinSelectionne="00:00:00,001"
+              this.creationModificationNOk=false
+            }else{
+              this.creationModificationNOk=true
+            }
           }
-          this.creationModificationNOk=true
+        }else{
+          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
+          this.creationModificationNOk=!(regex.test(this.timecodeFinSelectionne)||this.timecodeFinSelectionne=='')
         }
+      },
+      languesVisibleSelectionne(){
+        this.actualiserTableau()
+      },
+      versionsVisibleSelectionne(){
+        this.actualiserTableau()
+      },
+      personnagesVisibleSelectionne(){
+        this.actualiserTableau()
       }
     },
     created() {
@@ -700,6 +826,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+    #selectionAffichage{
+      display: flex;
+      .selectionAffichage{
+        margin: 5px;
+        width: 30%;
+      }
+    }
     .bg{
         background-color: red !important;
     }

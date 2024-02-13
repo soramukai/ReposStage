@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { ipcMain } from "electron";
-import { creerLigne, chargerLigne, supprimerLigne,modifierLigne } from '../Entitee/EntiteeLigne'
+import { creerLigne, chargerLigne, supprimerLigne,modifierLigne,dupliquerLigne } from '../Entitee/EntiteeLigne'
 import { creerVersion , chargerVersion,chargerVersionDeLangue, modifierVersion,supprimerVersion } from '../Entitee/EntiteeVersion'
 import { creerLangue, chargerLangue, modifierLangue, supprimerLangue } from "../Entitee/EntiteeLangue";
 import { creerPersonnage,chargerPersonnage, modifierPersonnage, supprimerPersonnage } from "../Entitee/EntiteePersonnage";
@@ -11,7 +11,6 @@ export default class IpcDb {
 
     static initialisation(): void {
         ipcMain.on('electron:initialiserDatabase',async (event,_path)=>{
-            console.log("passe par ipcDb.ts")
             dbConnection.initialisationBaseDeDonnee(_path)
         })
         ipcMain.on('electron:dbSwitchOff',async (event)=>{
@@ -71,6 +70,9 @@ export default class IpcDb {
         ipcMain.on('electron:modifierLigne',async (event,_uid,_json)=>{
             await modifierLigne(_uid,_json)
         })
+        ipcMain.on('electron:dupliquerLigne',async (event,_uid)=>{
+            await dupliquerLigne(_uid)
+        })
 
         //Personnage
         ipcMain.on('electron:creerPersonnage',async (event, _json:JSON)=>{
@@ -80,7 +82,6 @@ export default class IpcDb {
             return await chargerPersonnage();
         });
         ipcMain.on('electron:modifierPersonnage',async (event,_idNomAModifier:number,_json:JSON)=>{
-            console.log(_json)
             await modifierPersonnage(_idNomAModifier,_json);
         })
         ipcMain.on('electron:supprimerPersonnage',async (event,_idPersonnageASupprimer:number)=>{

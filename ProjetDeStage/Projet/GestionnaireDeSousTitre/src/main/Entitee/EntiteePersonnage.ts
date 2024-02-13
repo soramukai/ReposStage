@@ -25,7 +25,7 @@ export async function creerPersonnage(_json: JSON){
         console.log("La ligne à été sauvegardé")
     }
     else{
-        console.log("La ligne existe deja")
+        console.error("La ligne existe deja")
     }
 }
 
@@ -48,7 +48,7 @@ export async function modifierPersonnage(_idAModifier:number,_json:JSON){
         console.log("La ligne à été modifié")
     }
     else{
-        console.log("La ligne n'existe pas")
+        console.error("La ligne n'existe pas")
     }
 }
 
@@ -61,6 +61,6 @@ export async function supprimerPersonnage(_idASupprimer:number){
         console.log("La ligne a été supprimé")
     }
     else{
-        console.log("La ligne n'existe pas")
+        console.error("La ligne n'existe pas")
     }
 }

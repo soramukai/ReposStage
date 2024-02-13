@@ -178,7 +178,7 @@ export default {
                     this.ValeurElementPrincipal="personnage_id"
                     break
                 default:
-                    console.log("probleme")
+                    console.error("Page non Chargé")
             }
             this.ElementPrincipalListe =await this.chargementLVA(this.NomDeLaPage)
         },
@@ -201,7 +201,6 @@ export default {
         },
         // Fonction qui permet de faire une requette de modification à la base de donnée via une commande IPC
         async modificationLVA(){     
-            console.log(this.ElementPrincipalSelectionne)
             await window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJsonVersion())
             location.reload();
         },
@@ -263,7 +262,6 @@ export default {
                 else{
                     this.modificationOK=false
                 }
-                console.log((this.ElementPrincipalSelectionne=='' || this.texteCreation.length==0) && !this.modificationOK)
             }
             else{
                 this.modificationOK=false
@@ -279,17 +277,17 @@ export default {
             this.NomDeLaPage=prop1
             this.recuperationDonneesLVA()
         } else {
-            console.error('Prop1 est undefined.');
+            console.error('Prop Chemin repertoire est undefined.');
         }
         if (typeof propVideo === 'string') {
             this.video=propVideo
         } else {
-            console.error('Prop1 est undefined.');
+            console.error('Prop Video est undefined.');
         }
         if (typeof propDatabase === 'string') {
             this.database=propDatabase
         } else {
-            console.error('Prop1 est undefined.');
+            console.error('Prop Database est undefined.');
         }
     },
 }
