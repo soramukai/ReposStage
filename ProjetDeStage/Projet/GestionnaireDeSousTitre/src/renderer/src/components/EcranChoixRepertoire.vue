@@ -56,7 +56,7 @@
         <v-file-input 
           class="video"
           :disabled="cheminDuRepertoire==''|| ProgressionConverstion!=''"
-          v-model="videoAimporter"
+          :v-model="videoAimporter"
           :accept="extensionsVideoAcceptees">
         </v-file-input>
         <v-btn 
@@ -123,7 +123,7 @@
           <v-file-input 
             class="BDD"
             :disabled="cheminDuRepertoire==''"
-            v-model="databaseAImporter"
+            :v-model="databaseAImporter"
             :accept="extensionsDatabaseAcceptees">
           </v-file-input>
           <v-btn 

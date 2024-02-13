@@ -1,94 +1,202 @@
 //@ts-nocheck
-import { Entity, Column, ManyToOne, ManyToMany, JoinTable, JoinColumn, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import dbConnection from '../Class/dbConnection.ts';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { EntiteeCouleur } from './EntiteeCouleur';
 import { EntiteeVersion } from './EntiteeVersion';
 import { EntiteePersonnage } from './EntiteePersonnage';
-import { EntiteeCouleur } from './EntiteeCouleur';
-import dbConnection from '../Class/dbConnection.ts';
 
 @Entity()
-export class EntiteeLigne{
+export class EntiteeLigne {
+    @Column()
+    ligne_id_interne: number;
+
     @PrimaryColumn()
-    ligne_id: number
+    ligne_id: number;
 
     @Column()
-    ligne_timecode_Debut: string
+    ligne_timecode_Debut: string;
 
     @Column()
-    ligne_timecode_Fin: string
+    ligne_timecode_Fin: string;
 
     @Column()
-    ligne_z_index: number
+    ligne_z_index: number;
 
     @Column()
-    ligne_texte: string
+    ligne_texte: string;
+
+    @PrimaryColumn()
+    version_id: number;
 
     @Column()
-    version_id:number;
+    ligne_couleur: string;
+
+    @Column()
+    ligne_couleur_hexa: string;
 
     @Column({ nullable: true })
-    couleur_id:number;
+    personnage_id: number|undefined;
 
-    // @Column({ nullable: true })
-    // personnage_id:number;
-
-    @ManyToOne(() => EntiteeCouleur,couleur => couleur.lignes,{onDelete:"CASCADE"},{ nullable: true })
-    @JoinColumn({name:'couleur_id'})
-    couleur: EntiteeCouleur;
-
-    @ManyToOne(() => EntiteeVersion,version=>version.lignes)
+    @ManyToOne(() => EntiteeVersion, version => version.lignes)
     @JoinColumn({ name: 'version_id' })
     version: EntiteeVersion;
 
-    @ManyToMany(() => EntiteePersonnage, personnage => personnage.lignes,{ nullable: true })
-    @JoinTable({
-        name: 'JOUER',
-        joinColumns: [
-            { name: 'ligne_id', referencedColumnName: 'ligne_id' },
-            { name: 'version_id', referencedColumnName: 'version_id' }
-        ],
-        inverseJoinColumns: [
-            { name: 'personnage_id', referencedColumnName: 'personnage_id' }
-        ],
-    })
-    personnages: EntiteePersonnage[];
-
+    @ManyToOne(() => EntiteePersonnage, personnage => personnage.lignes)
+    @JoinColumn({ name: 'personnage_id' })
+    personnage: EntiteePersonnage;
 }
+
 
 export async function creerLigne(_json: JSON){
 
     const table = dbConnection.dataSource.getRepository(EntiteeLigne)
-    let check = await table.find({where:{
+    if(_json.id==undefined||_json.id==''){
+        _json.id=-1
+    }
+    let check = await table.find({where: {
         ligne_id: _json["id"],
-        version_id:_json["versionId"]
+        version_id: _json["versionId"]
     }})
 
     if(check.length==0){
         const ligne = new EntiteeLigne();
-        ligne.ligne_id = _json.id;
-        ligne.ligne_timecode_Debut = _json.timecodeDebut;
-        ligne.ligne_timecode_Fin = _json.timecodeFin;
+        console.log(_json)
+        if(_json.id==-1){
+            ligne.ligne_id = await getMax('ligne_id')
+        }else{
+            ligne.ligne_id =_json.id
+        }
+        ligne.ligne_timecode_Debut = _json.timeCodeDebut;
+        ligne.ligne_timecode_Fin = _json.timeCodeFin;
         ligne.ligne_z_index = _json.zIndex;
         ligne.ligne_texte = _json.texte;
-
-        const couleur =  dbConnection.dataSource.getRepository(EntiteeCouleur)
-        const couleurRef = await couleur.find({where:{couleur_id:_json.autre}})
-        ligne.couleur = couleurRef[0]
+        ligne.ligne_couleur = _json.couleur;
+        ligne.ligne_couleur_hexa = _json.couleurHexa;
 
         const version = dbConnection.dataSource.getRepository(EntiteeVersion)
         const versionRef = await version.find({ where: { version_id: _json.versionId } })
 
+        const personnage = dbConnection.dataSource.getRepository(EntiteePersonnage)
+        const personnageRef = await personnage.find({ where: { personnage_id: _json.personnageId } })
         ligne.version = versionRef[0];
+        ligne.personnage = personnageRef[0];
 
+        ligne.ligne_id_interne = await getMax('ligne_id_interne')
+        console.log(ligne)
         await table.save(ligne);
-        //console.log("La ligne à été sauvegardée")
+        console.log("La ligne à été sauvegardée")
     }
     else {
-        //console.log("La ligne existe déjà")
+        console.log("La ligne existe déjà")
     }
 }
 
-
 export async function chargerLigne(){
     const table = dbConnection.dataSource.getRepository(EntiteeLigne)
-    return await table.find({ relations: ["version", "version.langue","couleur"]})
+    return await table.find({ relations: ["version", "version.langue","personnage"]})
+}
+
+export async function modifierLigne(_uid:number,_json:JSON) {
+    const table = dbConnection.dataSource.getRepository(EntiteeLigne)
+
+    const oldLigne = await table.findOne({where: {
+        ligne_id_interne:_uid
+    }})
+
+    if(oldLigne){
+        const newLigne = new EntiteeLigne()
+        newLigne.ligne_id_interne = _uid
+        newLigne.ligne_timecode_Debut = _json.timeCodeDebut==''?oldLigne.ligne_timecode_Debut:_json.timeCodeDebut
+        newLigne.ligne_timecode_Fin = _json.timeCodeFin==''?oldLigne.ligne_timecode_Fin:_json.timeCodeFin
+        newLigne.ligne_z_index = _json.zIndex==''?oldLigne.ligne_z_index:_json.zIndex
+        newLigne.ligne_texte = _json.texte==''?oldLigne.ligne_texte:_json.texte
+        if(_json.personnageId==''){
+            newLigne.personnage_id=oldLigne.personnage_id
+        }
+        else if(_json.personnageId=='Aucun'){
+            newLigne.personnage_id=undefined
+        }
+        else{
+            newLigne.personnage_id=_json.personnageId
+        }
+        newLigne.version_id = _json.versionId==''?oldLigne.version_id:_json.versionId
+        newLigne.ligne_couleur = _json.couleur==''?oldLigne.ligne_couleur:_json.couleur
+        newLigne.ligne_couleur_hexa = _json.couleurHexa==''?oldLigne.ligne_couleur_hexa:_json.couleurHexa
+        const oldId = oldLigne.ligne_id
+        newLigne.ligne_id = (_json.id==''||_json.id==undefined)?oldLigne.ligne_id:_json.id
+
+        const check = await table.findOne({where:{
+            ligne_id:newLigne.ligne_id, 
+            version_id:newLigne.version_id}})
+
+
+        if(check && newLigne.ligne_id_interne!=check.ligne_id_interne){
+            console.log("aaaaa")
+            newLigne.ligne_id= await getMax('ligne_id')
+            console.log(await getMax('ligne_id'))
+        }
+        const ligneASupp = await table.findOne({where: {
+            ligne_id_interne:_uid,
+            ligne_id:oldId
+        }})
+
+        const version = await dbConnection.dataSource.getRepository(EntiteeVersion)
+        const versionRef = await version.find({ where: { version_id: newLigne.version_id } })
+        newLigne.version = await versionRef[0];
+
+        if(newLigne.personnage_id!=undefined){
+            const personnage =await dbConnection.dataSource.getRepository(EntiteePersonnage)
+            const personnageRef = await personnage.find({ where: { personnage_id: newLigne.personnage_id } })
+            newLigne.personnage = await personnageRef[0];
+        }
+
+        console.log("----------------------------------------------------------------------------")
+        console.log(ligneASupp)
+        console.log("________________________")
+        console.log(oldId)
+        console.log("________________________")
+        console.log(newLigne)
+        console.log("----------------------------------------------------------------------------")
+
+        if(ligneASupp){
+            await table.remove(ligneASupp)
+        }
+
+        await table.save(newLigne);
+        console.log("La ligne à été sauvegardée")
+
+    }
+    else {
+        console.log("La ligne existe déjà")
+    }
+}
+
+export async function supprimerLigne(_idASupprimer){
+    const table=dbConnection.dataSource.getRepository(EntiteeLigne)
+    let check = await table.findOne({where:{ligne_id_interne:_idASupprimer}}) 
+    
+    if(check!=undefined){
+        await table.remove(check)
+        console.log("La ligne a été supprimé")
+    }
+    else{
+        console.log("La ligne n'existe pas")
+    }
+}
+
+async function getMax(_entre: string): Promise<number> {
+    const table = dbConnection.dataSource.getRepository(EntiteeLigne);
+    const maxIdResult = await table.createQueryBuilder("ligne")
+        .select("MAX(ligne." + _entre + ")", "maxId")
+        .getRawOne();
+
+    const maxIdString: string = maxIdResult.maxId;
+    const maxId: number = parseInt(maxIdString);
+
+    if (!isNaN(maxId)) {
+        return maxId + 1;
+    } else {
+        // Si la valeur maximale est NaN (par exemple, si aucune entrée n'est trouvée), retourner 1
+        return 1;
+    }
 }

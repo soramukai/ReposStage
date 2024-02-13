@@ -1,7 +1,5 @@
 //@ts-nocheck
 import {  Entity, PrimaryGeneratedColumn, JoinTable, Column,ManyToMany, ManyToOne, JoinColumn, RelationId } from 'typeorm';
-import { EntiteeLigne } from './EntiteeLigne';
-import { EntiteeCouleur} from './EntiteeCouleur.ts'
 import dbConnection from '../Class/dbConnection';
 import { json } from 'stream/consumers';
 
@@ -13,32 +11,6 @@ export class EntiteePersonnage {
     @Column()
     personnage_nom: string;
 
-    // @Column({ nullable: true })
-    // ligne_id:number;
-
-    @Column({ nullable: true })
-    version_id:number;
-
-    /*@Column()
-    couleur_id:number;
-
-    @ManyToOne(() => EntiteeCouleur,couleur => couleur.personnages,{onDelete:"CASCADE"})
-    @JoinColumn({name:'couleur_id'})
-    couleur: EntiteeCouleur;*/
-
-    @ManyToMany(() => EntiteeLigne, ligne=>ligne.personnage_id,{ nullable: true })
-    @JoinTable({
-        name: 'JOUER',
-        joinColumn: {
-            name: 'personnage_id',
-            referencedColumnName: 'personnage_id', // Correction ici
-        },
-        inverseJoinColumns: [
-            { name: 'ligne_id', referencedColumnName: 'ligne_id' },
-            { name: 'version_id', referencedColumnName: 'version_id' },
-        ],
-    })
-    lignes: EntiteeLigne[];
 }
 export async function creerPersonnage(_json: JSON){
     const table = dbConnection.dataSource.getRepository(EntiteePersonnage)
@@ -48,10 +20,6 @@ export async function creerPersonnage(_json: JSON){
     if(check.length==0){
         const perso = new EntiteePersonnage();
         perso.personnage_nom=_json.nom;
-
-        /*const couleur =  dbConnection.dataSource.getRepository(EntiteeCouleur)
-        const couleurRef = await couleur.find({where:{couleur_id:_json.autre}})
-        perso.couleur = couleurRef[0]*/
 
         await table.save(perso)
         console.log("La ligne à été sauvegardé")
@@ -63,7 +31,7 @@ export async function creerPersonnage(_json: JSON){
 
 export async function chargerPersonnage(){
     const table = dbConnection.dataSource.getRepository(EntiteePersonnage)
-    return await table.find(/*{ relations: ['couleur'] }*/)
+    return await table.find()
 }
 
 export async function modifierPersonnage(_idAModifier:number,_json:JSON){
@@ -73,16 +41,9 @@ export async function modifierPersonnage(_idAModifier:number,_json:JSON){
     }})
 
     if(check!=undefined){
-
         if(_json.nom!=""){
-            check.version_nom=_json.nom;
+            check.personnage_nom=_json.nom;
         }
-        /*const couleur =  dbConnection.dataSource.getRepository(EntiteeCouleur)
-        const couleurRef = await couleur.find({where:{couleur_id:_json.autre}})
-
-        if(couleurRef.length>0){
-            check.couleur=couleurRef[0]
-        }*/
         await table.save(check)
         console.log("La ligne à été modifié")
     }
@@ -93,7 +54,7 @@ export async function modifierPersonnage(_idAModifier:number,_json:JSON){
 
 export async function supprimerPersonnage(_idASupprimer:number){
     const table=dbConnection.dataSource.getRepository(EntiteePersonnage)
-    let check = await table.findOne(/*{where:{personnage_id:_idASupprimer}}*/) 
+    let check = await table.findOne() 
     
     if(check!=undefined){
         await table.remove(check)

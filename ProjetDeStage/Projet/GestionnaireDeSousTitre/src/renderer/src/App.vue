@@ -17,14 +17,6 @@ export default {
     EcranGestionSousTitre,
   },
   methods:{
-    async send(method,_json){
-
-    _json.forEach(async x=>{
-        window.electron.ipcRenderer.send("electron:creer"+method,x)
-    })
-    let test = await window.electron.ipcRenderer.invoke("electron:charger"+method) 
-    return test;
-    }
   },
   async mounted(){
     // let couleur=[

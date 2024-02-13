@@ -2,7 +2,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, RelationId } from 'typeorm';
 import {EntiteeLangue} from './EntiteeLangue.ts'
 import dbConnection from '../Class/dbConnection.ts';
-import { json } from 'stream/consumers';
 
 @Entity()
 export class EntiteeVersion{
@@ -21,18 +20,22 @@ export class EntiteeVersion{
 }
 export async function creerVersion(_version: JSON){
 
+    console.log(_version)
     const table = dbConnection.dataSource.getRepository(EntiteeVersion)
     let check = await table.find({where:{
         version_nom: _version.nom,
     }})
+    console.log(check)
     if(check.length==0){
         const version = new EntiteeVersion();
         version.version_nom=_version.nom;
 
         //Ajouter try catch sur la detection de foreignkey
         const langue =  dbConnection.dataSource.getRepository(EntiteeLangue)
-        const langueRef = await langue.find({where:{langue_id:_version.langue}})
-        version.langue = langueRef[0]
+        let langueRef = null
+        langueRef = await langue.findOne({where:{langue_id:_version.langue_id}})
+        version.langue = langueRef
+
         ///////////////////////
         await table.save(version)
         console.log("La ligne à été sauvegardé")
@@ -47,6 +50,19 @@ export async function chargerVersion(){
     return await table.find({ relations: ['langue'] });
 }
 
+export async function chargerVersionDeLangue(_nomLangue: string):JSON {
+    const tableVersion = dbConnection.dataSource.getRepository(EntiteeVersion);
+    const tableLangue = dbConnection.dataSource.getRepository(EntiteeLangue);
+
+    const langue = await tableLangue.findOne({ where: { langue_nom: _nomLangue } });
+    if (langue) {
+        const versions = await tableVersion.find({ where: { langue_id: langue.langue_id },relations: ['langue']});
+        return versions;
+    } else {
+        return []; // Ou vous pouvez gérer différemment le cas où la langue n'est pas trouvée
+    }
+}
+
 export async function modifierVersion(_idVersionAModifier:number,_json:JSON){
     console.log(_json.nom)
     console.log(_json.autre)
@@ -54,17 +70,15 @@ export async function modifierVersion(_idVersionAModifier:number,_json:JSON){
     let check = await table.findOne({where:{
         version_id:_idVersionAModifier,
     }})
-
     if(check!=undefined){
-
         if(_json.nom!=""){
             check.version_nom=_json.nom;
         }
-
         const langue =  dbConnection.dataSource.getRepository(EntiteeLangue)
-        const langueRef = await langue.find({where:{langue_id:_json.autre}})
-        console.log(json)
-        console.log(langueRef)
+        let langueRef = "" 
+        langueRef = await langue.find({where:{langue_id:_json.langue_id}})
+
+
 
         if(langueRef.length>0){
             check.langue=langueRef[0]

@@ -7,6 +7,7 @@ import ipcFfmpeg from './IPC/ipcFfmpeg.ts';
 import ipcRepertoire from './IPC/ipcRepertoire.ts'
 import  dbConnection  from './Class/dbConnection.ts';
 import protocolFichierLocal from './protocol/protocolFichierLocal.ts';
+import IpcDb2 from './IPC/ipcDb2';
 
 const path = require('path');
 const url = require('url');
@@ -68,8 +69,8 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+  ipcRepertoire.initialisation(mainWindow)  
   IpcDb.initialisation()
-  ipcRepertoire.initialisation(mainWindow)
   protocolFichierLocal.initialisation()
   ipcFfmpeg.initialisation();
 

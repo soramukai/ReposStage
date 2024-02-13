@@ -150,6 +150,7 @@ export default {
 
             video:"",
             database:"",
+            autre:"",
         }
     },
     methods:{
@@ -170,16 +171,11 @@ export default {
                     this.ElementFacultatifAffichageActif=true
                     this.modificationOK=false
                     this.ElementFacultatifListe = await this.chargementLVA("Langue")
+                    this.autre="langue_id"
                     break
                 case "Personnage":
-                    // this.LabelElementFacultatif ="Couleur"
                     this.TitreElementPrincipal="personnage_nom"
                     this.ValeurElementPrincipal="personnage_id"
-                    // this.TitreElementFacultatif="couleur_nom"
-                    // this.ValeurElementFacultatif="couleur_id"
-                    // this.ElementFacultatifAffichageActif=true
-                    // this.modificationOK=false
-                    // this.ElementFacultatifListe = await this.chargementLVA("Couleur")
                     break
                 default:
                     console.log("probleme")
@@ -187,16 +183,16 @@ export default {
             this.ElementPrincipalListe =await this.chargementLVA(this.NomDeLaPage)
         },
         // Fonction qui permet de formater un JSON a envoyer dans une commande IPC afin d'effectuer une requette à la base de donnée
-        async creationJson(){
+        async creationJsonVersion(){
             return{
                 "id":-1,
                 "nom":this.texteCreation,
-                "autre":this.ElementFacultatifSelectionne
+                "langue_id":this.ElementFacultatifSelectionne
             }
         },
         // Fonction qui permet de faire une requette de creation à la base de donnée via une commande IPC
         async creationLVA(){
-            await window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage,await this.creationJson())
+            await window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage,await this.creationJsonVersion())
             location.reload();
         },
         // Fonction qui permet de faire une requette de chargement à la base de donnée via une commande IPC
@@ -205,7 +201,8 @@ export default {
         },
         // Fonction qui permet de faire une requette de modification à la base de donnée via une commande IPC
         async modificationLVA(){     
-            await window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJson())
+            console.log(this.ElementPrincipalSelectionne)
+            await window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJsonVersion())
             location.reload();
         },
         // Fonction qui permet de faire une requette de suppression à la base de donnée via une commande IPC

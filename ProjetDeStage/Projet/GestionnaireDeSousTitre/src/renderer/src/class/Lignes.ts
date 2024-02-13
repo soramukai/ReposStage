@@ -1,27 +1,24 @@
 export default class Lignes {
-    private static ligne:Lignes|undefined
-    private id:number
+    private id:number|undefined
     private versionId:number
-    private personnageId:number
+    private personnageId:number|undefined
     private timeCodeDebut:string
     private timeCodeFin:string
     private zIndex:number
     private texte:string
+    private couleur:string
+    private couleurHexa:string
     
-    private constructor(_id:number, _versionId:number, _personnageId:number, _timeCodeDebut:string, _timeCodeFin:string, _zIndex:number, _texte:string){
+    constructor(_id:number|undefined, _versionId:number, _timeCodeDebut:string, _timeCodeFin:string, _zIndex:number, _texte:string,_personnageId:number|undefined,_couleur:string,_couleurHexa:string){
         this.id =_id
         this.versionId = _versionId
-        this.personnageId = _personnageId
         this.timeCodeDebut = _timeCodeDebut
         this.timeCodeFin = _timeCodeFin
         this.zIndex = _zIndex
         this.texte = _texte
-    }
-    recupererLigne(_id:number, _versionId:number, _personnageId:number, _timeCodeDebut:string, _timeCodeFin:string, _zIndex:number, _texte:string){
-        if(!Lignes.ligne){
-            Lignes.ligne = new Lignes(_id, _versionId, _personnageId, _timeCodeDebut, _timeCodeFin, _zIndex, _texte)
-        }
-        return Lignes.ligne;
+        this.personnageId = _personnageId
+        this.couleur = _couleur
+        this.couleurHexa = _couleurHexa
     }
     recupererId(){
         return this.id
@@ -64,6 +61,20 @@ export default class Lignes {
     }
     enregistrerTexte(_texte:string){
         this.texte = _texte
+    }
+    recupererCouleur(){
+        return this.couleur
+    }
+    enregistrerCouleur(_couleur:string){
+        if(_couleur==undefined)
+        this.couleur = _couleur
+    }
+    recupererCouleurHexa(){
+        return this.couleurHexa
+    }
+    enregistrerCouleurHexa(_couleurHexa:string){
+        if(_couleurHexa==undefined)
+        this.couleur = _couleurHexa
     }
 
 }

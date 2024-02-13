@@ -17,7 +17,7 @@ export default class dbConnection {
                 type: 'sqlite',
                 database: _path,
                 synchronize: true,
-                entities: [EntiteePersonnage, EntiteeLangue, EntiteeVersion, EntiteeLigne,EntiteeCouleur],
+                entities: [EntiteeLangue,EntiteePersonnage, EntiteeVersion, EntiteeLigne,EntiteeCouleur],
             });
 
             // Attendez que la connexion à la base de données soit établie

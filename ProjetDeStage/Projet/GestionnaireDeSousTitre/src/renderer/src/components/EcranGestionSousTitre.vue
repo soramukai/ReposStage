@@ -4,61 +4,198 @@
             <div class="videoGestionSousTitre">
                 <v-row>
                     <v-col>
-                      <video id="video" src="" controls></video>
+                      <video 
+                        id="video" 
+                        src=""
+                        @timeupdate="changementTimeCode" 
+                        ref="video"
+                        controls>
+                      </video>
                       <!-- <video id="myVideo" :src="cheminDeLaVideo" controls></video> -->
                     </v-col>
                 </v-row>
                 <v-textarea
                   class="no-resize"
-
+                  readonly=""
                   variant="outlined"
-                  rows="2"
+                  rows="4"
+                  v-model="bandeRythmo"
+                  ref="bandeRythmo"
                   :no-resize="true">
                 </v-textarea>
             </div>
 
             <div class="videoGestionSousTitre">
-                <v-text-field readonly class="gridArea" variant="outlined"> Mode {{ mode }}</v-text-field>
+                <v-text-field 
+                  readonly 
+                  class="gridArea" 
+                  variant="outlined"> 
+                    Mode {{ mode }}
+                </v-text-field>
 
-                <v-select class="gridArea" variant="outlined" label="Langue" v-model="langueSelectionne" :items="langues"></v-select>
-                <router-link @click="() => ouvrirNouvelleFenetre('Langue')" class="gridArea gestionLVA" to="/modification-lva">
-                  <v-btn class="boutonLVA"  variant="tonal">Gestion Langue</v-btn>
+                <v-select 
+                  class="gridArea" 
+                  variant="outlined" 
+                  label="Langue" 
+                  v-model="langueSelectionne" 
+                  :items="langues"
+                  item-title="langue_nom"
+                  item-value="langue_id">
+                </v-select>
+                
+                <router-link 
+                  @click="() => ouvrirFenettreGestionLVA('Langue')" 
+                  class="gridArea gestionLVA" 
+                  to="/modification-lva">
+                    <v-btn 
+                      class="boutonLVA"  
+                      variant="tonal">
+                        Gestion Langue
+                    </v-btn>
                 </router-link>
 
-                <v-select class="gridArea" variant="outlined" label="Version" v-model="versionSelectionne" :items="versions"></v-select>
-                <router-link @click="() => ouvrirNouvelleFenetre('Version')" class="gridArea gestionLVA" to="/modification-lva">
-                  <v-btn class="boutonLVA" variant="tonal">Gestion Version</v-btn>
+                <v-select 
+                  class="gridArea" 
+                  variant="outlined" 
+                  label="Version" 
+                  v-model="versionSelectionne" 
+                  :items="versions"
+                  item-title="version_nom"
+                  item-value="version_id">
+                </v-select>
+                
+                <router-link 
+                  @click="() => ouvrirFenettreGestionLVA('Version')" 
+                  class="gridArea gestionLVA" 
+                  to="/modification-lva">
+                    <v-btn 
+                      class="boutonLVA" 
+                      variant="tonal">
+                        Gestion Version
+                    </v-btn>
                 </router-link>
 
-                <v-text-field class="gridArea" variant="outlined" v-model="idSousTitre" label="id"></v-text-field>
-                <v-text-field class="gridArea" variant="outlined" v-model="zIndexSousTitre" label="z-index"></v-text-field>
-                <v-text-field class="gridArea" variant="outlined" v-model="timecodeDebutSousTitre" label="time-code debut"></v-text-field>
-                <v-text-field class="gridArea" variant="outlined" v-model="timecodeFinSousTitre" label="time-code fin"></v-text-field>
+                <v-select 
+                  :items="couleurs"
+                  class="gridArea" 
+                  variant="outlined" 
+                  label="Couleur" 
+                  v-model="couleurSelectionne" 
+                  item-title="nom"
+                  item-value="code">
+                </v-select> 
 
-                <v-select class="gridArea" variant="outlined" label="Acteur" v-model="acteurSelectionne" :items="acteurs"></v-select>
+                <v-select 
+                  class="gridArea" 
+                  variant="outlined" 
+                  label="Personnage" 
+                  v-model="personnageSelectionne" 
+                  :items="personnages"
+                  item-title="personnage_nom"
+                  item-value="personnage_id">>
+                </v-select>
 
-                <router-link @click="() => ouvrirNouvelleFenetre('Personnage')" class="gridArea gestionLVA" to="/modification-lva">
-                  <v-btn class="boutonLVA" variant="tonal">Gestion Acteur</v-btn>
+                <div                   
+                  class="gridArea" >
+                    <v-text-field 
+                      variant="outlined" 
+                      v-model="timecodeDebutSelectionne" 
+                      label="time-code debut">
+                    </v-text-field>
+                    <v-btn
+                      variant="tonal"
+                      @click="preRemplirTimecodeDebut">
+                      ⭠
+                    </v-btn>
+                </div>
+
+                <div class="gridArea">
+                  <v-text-field 
+                    class="gridArea" 
+                    variant="outlined" 
+                    v-model="timecodeFinSelectionne" 
+                    label="time-code fin">
+                  </v-text-field>
+                  <v-btn
+                    variant="tonal"
+                    @click="preRemplirTimecodeFin">
+                    ⭠
+                  </v-btn>
+                </div>
+                
+                <v-text-field 
+                  class="gridArea" 
+                  variant="outlined" 
+                  v-model="zIndexSelectionne" 
+                  label="z-index"
+                  type="number"
+                  min="1"
+                  max="10">
+                </v-text-field>
+
+                <v-text-field 
+                  class="gridArea" 
+                  variant="outlined" 
+                  label="Id" 
+                  v-model="idSelectionne"
+                  type="number"
+                  min="1">
+                </v-text-field>
+
+                <router-link 
+                  @click="() => ouvrirFenettreGestionLVA('Personnage')" 
+                  class="gridArea gestionLVA" 
+                  to="/modification-lva">
+                    <v-btn 
+                      class="boutonLVA" 
+                      variant="tonal">
+                        Gestion Acteur
+                    </v-btn>
                 </router-link>
 
                 <v-textarea 
                   class="gridArea" 
                   variant="outlined" 
-                  v-model="texteSousTitre"
-                  rows="3"
-                  :no-resize="true">>{{ texteSousTitre }}</v-textarea>
-                <v-btn class="gridArea" variant="tonal">{{ texteDuMode }}</v-btn>
-                <v-btn class="gridArea" variant="tonal">Copier</v-btn>
-                <v-btn id="supprimer" class="gridArea supprimer" variant="tonal">Supprimer</v-btn>
-                <v-btn class="gridArea" variant="tonal">Filtrer</v-btn>
+                  v-model="texteSelectionne"
+                  rows="4"
+                  :no-resize="true">
+                    {{ texteSelectionne }}
+                </v-textarea>
+                <v-btn 
+                  class="gridArea" 
+                  variant="tonal"
+                  @click="creationModification"
+                  :disabled="((mode=='Creation'&& (versionSelectionne=='' || timecodeDebutSelectionne=='' ||timecodeFinSelectionne=='' || zIndexSelectionne=='' || texteSelectionne=='' || doublon))||(mode=='Modification'&& doublon)||creationModificationNOk)">
+                    {{ texteDuMode }}
+                </v-btn>
+                <v-btn 
+                  class="gridArea" 
+                  variant="tonal">
+                    Copier
+                </v-btn>
+                <v-btn 
+                  id="supprimer" 
+                  class="gridArea supprimer" 
+                  variant="tonal"
+                  @click="supprimerSousTitre">
+                    Supprimer
+                </v-btn>
+                <v-btn 
+                  class="gridArea" 
+                  variant="tonal"
+                  @click="filtrerTableau">
+                    Filtrer
+                </v-btn>
             </div>
         </div>
 
-        <div class="section">
+        <div 
+          class="section">
             <v-data-table
                 v-model="ligneSelectionnee"
-                :items="items"  
-                item-value="id"
+                :items="tableauSousTitre"  
+                :headers="enteteTableau"
+                item-value="ligne_id_interne"
                 :items-per-page="itemParPage"
                 show-select
                 @click:row="cliqueLignes"
@@ -66,259 +203,369 @@
             </v-data-table>
         </div>
 
-        <div class="section">
-            <v-btn class="bouton optionProjet" variant="tonal">Exporter</v-btn>
-            <v-btn class="bouton optionProjet" variant="tonal">Importer</v-btn>
-            <v-btn class="bouton optionProjet" variant="tonal">Sauvegarder</v-btn>
-            <v-text-field class="input optionProjet" readonly si>{{ messageInformatif }}</v-text-field>
+        <div 
+          class="section">
+            <v-btn 
+              class="bouton optionProjet" 
+                variant="tonal">
+                  Exporter
+              </v-btn>
+            <v-btn 
+              class="bouton optionProjet" 
+              variant="tonal">
+                Importer
+            </v-btn>
+            <v-btn 
+              class="bouton optionProjet" 
+              variant="tonal"
+              @click="test">
+                Sauvegarder
+            </v-btn>
+            <v-text-field 
+              class="input optionProjet" 
+              readonly>
+                {{ messageInformatif }}
+            </v-text-field>
 
-            <router-link class="route" to="/">
-              <v-btn class="bouton optionProjet retour" variant="tonal">Retour</v-btn>
+            <router-link 
+              class="route" 
+              to="/">
+                <v-btn 
+                  class="bouton optionProjet retour" 
+                  variant="tonal">
+                    Retour
+                </v-btn>
             </router-link>
         </div>
     </div>
-    
+
 </template>
 
 <script lang="ts">
-import dbConnection from 'src/main/Class/dbConnection';
 //@ts-nocheck
+import Lignes from '../class/Lignes.ts'
 export default {
     data(){
         return{
-            itemParPage:10,
-            mode:"",
-            idSousTitre:"",
-            zIndexSousTitre:"",
-            timecodeDebutSousTitre:"",
-            timecodeFinSousTitre:"",
-            texteSousTitre:"",
-            langues:[],
-            langueSelectionne:"",
-            versions:[],
-            versionSelectionne:"",
-            acteurs:[],
-            acteurSelectionne:"",
-            cheminDeLaVideo:"",
-            cheminDeLaDatabase:"",
-            messageInformatif:"",
-            texteDuMode:"",
-            ligneSelectionnee: [],
-      items: [	
-          {	
-            id:	1
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:33',	
-            timeCodeFin: '00:01:35',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "Salut... Jhonny",	
-          },	
-          {	
-            id:	2
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:36',	
-            timeCodeFin: '00:01:39',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Hey Comment tu vas l'ami?",	
-          },	
-          {	
-            id:	3
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:42',	
-            timeCodeFin: '00:01:48',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "Ho... Tu sais les affaires ne sont pas tres florrissante en ce moment",	
-          },	
-          {	
-            id:	4
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:50',	
-            timeCodeFin: '00:01:55',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Ha ca... Elles ne le sont pas pour un grand nombre de gens honettes",	
-          },	
-          {	
-            id:	5
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:59',	
-            timeCodeFin: '00:02:04',	
-            acteur: 'Boby',	
-            zindex: 1,	
-            texte: "humm... Pourtant tu as l'air de bien t'en sortir toi?",	
-          },	
-          {	
-            id:	6
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:06',	
-            timeCodeFin: '00:02:08',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "C'est bien ce que je viens de dire",	
-          },	
-          {	
-            id:	7
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:10',	
-            timeCodeFin: '00:02:13',	
-            acteur: 'Boby',	
-	        zindex: 1,
-            texte: 'Toujours dans les magouille... Jhonny',	
-          },	
-          {	
-            id:	8
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:02:16',	
-            timeCodeFin: '00:02:19',	
-            acteur: 'Jhonny',	
-	        zindex: 1,
-            texte: "On se debrouille comme on peut",	
-          },	
-          {	
-            id:	9
-            ,langue: 'Francais',	
-            version:"FR001",	
-            timeCodeDebut: '00:01:36',	
-            timeCodeFin: '00:01:39',	
-            acteur: 'Jhonny',	
-            zindex: 1,	
-            texte: "Hey Comment tu vas l'ami?",	
-          },	
-        ],		  
-      tableHeight: 450, // Hauteur maximale du tableau en pixels  
+          //Variable V-model
+          idSelectionne:"",
+          personnageSelectionne:"",
+          timecodeDebutSelectionne:"00:00:00,000",
+          timecodeFinSelectionne:"00:00:00,000",
+          zIndexSelectionne:1,
+          couleurSelectionne:"",
+          texteSelectionne:"",
+          langueSelectionne:"",
+          versionSelectionne:"",
+          acteurSelectionne:"",
+          ligneSelectionnee: [],	
+          //Variable Items
+          langues:[],
+          versions:[],
+          acteurs:[],
+          personnages:[],
+          couleurs:[],      
+          tableauSousTitre:[],  
+          //proprieter du tableau
+          enteteTableau:[
+            {title:'UID',value:'ligne_id_interne',sortable:true},
+            {title:'ID',value:'ligne_id',sortable:true},
+            {title:'Version',value:'version.version_nom',sortable:true},
+            {title:'Langue',value:'version.langue.langue_nom',sortable:true},
+            {title:'Debut',value:'ligne_timecode_Debut',sortable:true},
+            {title:'Fin',value:'ligne_timecode_Fin',sortable:true},
+            {title:'z-index',value:'ligne_z_index',sortable:true},
+            {title:'Texte',value:'ligne_texte',sortable:true},
+            {title:'Personnage',value:'personnage.personnage_nom',sortable:true},
+            {title:'Couleur',value:'ligne_couleur'}
+          ],
+          couleurs:[
+            {"nom":"par defaut","code":"#85A4B1"},
+            { "nom": "Noir", "code": "#000000" },
+            { "nom": "Blanc", "code": "#FFFFFF" },
+            { "nom": "Bleu", "code": "#0000FF" },
+            { "nom": "Rouge", "code": "#FF0000" },
+            { "nom": "Vert", "code": "#00FF00" },
+            { "nom": "Rose", "code": "#FFC0CB" },
+            { "nom": "Jaune", "code": "#FFFF00" },
+            { "nom": "Orange", "code": "#FFA500" },
+            { "nom": "Violet", "code": "#8A2BE2" }
+          ],
+          tableHeight: 450, // Hauteur maximale du tableau en pixels  
+          //Prop
+          cheminDeLaVideo:"",
+          cheminDeLaDatabase:"",
+          //Variable d'interface
+          messageInformatif:"",
+          texteDuMode:"Créer",	
+          itemParPage:10,
+          mode:"Creation",
+          doublon:false,
+          bandeRythmo:"",
+          creationModificationNOk:false,
         }
     },
     methods:{
-      ouvrirNouvelleFenetre(page) {
+      async actualiserTableau(){
+        this.tableauSousTitre= await window.electron.ipcRenderer.invoke('electron:chargerLigne')
+        this.itemParPage=this.tableauSousTitre.length
+      },
+      async creationModification(){
+        let ligne=null
+        let couleur=this.couleurs.find(c=>c.code == this.couleurSelectionne)
+        ligne=new Lignes(
+            this.idSelectionne==""?undefined:this.idSelectionne,
+            this.versionSelectionne,
+            this.timecodeDebutSelectionne,
+            this.timecodeFinSelectionne,
+            this.zIndexSelectionne,
+            this.texteSelectionne,
+            this.personnageSelectionne,
+            couleur.nom==""?"par defaut":couleur.nom,
+            couleur.code
+          )
+          console.log(couleur.nom==""?"par defaut":couleur.nom,)
+        if(this.mode=='Creation'){
+          await window.electron.ipcRenderer.send('electron:creerLigne',ligne)
+        }else{
+          this.ligneSelectionnee.forEach(async l=>{
+            await window.electron.ipcRenderer.send('electron:modifierLigne',l,ligne)
+          })
+        }
+        setTimeout(async()=>{await this.actualiserTableau()},100)
+      },
+      async supprimerSousTitre(){
+        await this.ligneSelectionnee.forEach(async i=>{
+          await window.electron.ipcRenderer.send('electron:supprimerSousTitre',i)
+          console.log(i)
+        })
+        this.tableauSousTitre=[]
+        this.ligneSelectionnee=[]
+        setTimeout(async()=>{await this.actualiserTableau()},1)
+      },
+      async changementTimeCode(){
+        let currentTime = this.$refs.video.currentTime;
+        let sousTitresActifs = this.tableauSousTitre.filter(l => {
+          let debut = this.timeCodeFormatage(l.ligne_timecode_Debut);
+          let fin = this.timeCodeFormatage(l.ligne_timecode_Fin);
+          return debut <= currentTime && fin > currentTime;
+        });
+        if(sousTitresActifs){
+          let script = ""
+          sousTitresActifs.reverse()
+          sousTitresActifs.forEach(s=>{
+            script +=(s.personnage==null?"---:"+s.ligne_texte:s.personnage.personnage_nom+": "+s.ligne_texte) +"\n"
+          })
+          this.bandeRythmo = script
+        }
+        else{
+          this.bandeRythmo="";
+        }
+      },
+      preRemplirTimecodeDebut(){
+        let currentTime = this.$refs.video.currentTime;
+        this.timecodeDebutSelectionne=this.convertirTempsEnFormat(currentTime)
+      },
+      preRemplirTimecodeFin(){
+        let currentTime = this.$refs.video.currentTime;
+        this.timecodeFinSelectionne=this.convertirTempsEnFormat(currentTime)
+      },
+      timeCodeFormatage(_timecodeString){
+      let timecodeConverted = 0
+      let timecodeArrayms = _timecodeString.split(',')
+      let timecodeArrays = timecodeArrayms[0].split(':')
+      let seconde=parseInt(timecodeArrays[2])+parseInt(timecodeArrays[1]*60)+parseInt(timecodeArrays[0]*3600)
+      let miliseconde = parseFloat(timecodeArrayms[1]/1000)
+      timecodeConverted = parseFloat(seconde+miliseconde)
+      return timecodeConverted
+      },
+      convertirTempsEnFormat(timeInSeconds) {
+        // Convertir les secondes en heures, minutes et secondes
+        let heures = Math.floor(timeInSeconds / 3600);
+        let minutes = Math.floor((timeInSeconds % 3600) / 60);
+        let secondes = Math.floor(timeInSeconds % 60);
+        // Convertir les millisecondes en trois chiffres
+        let millisecondes = Math.floor((timeInSeconds - Math.floor(timeInSeconds)) * 1000);
+        // Formater la chaîne de temps
+        let formattedTime = `${heures.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')},${millisecondes.toString().padStart(3, '0')}`;
+        return formattedTime;
+      },
+      ouvrirFenettreGestionLVA(page) {
         this.$router.push({
           path: '/modification-lva',
           query: {
             prop1: page,
             propVideo: this.cheminDeLaVideo,
             propDatabase: this.cheminDeLaDatabase,
-          },
+          }, 
         });
-        
       },
-        changerVersion(){
-            switch(this.langueSelectionne){
-                case "Francais":
-                    this.versionSelectionne =""
-                    this.versions=["FR001","FR002","FR003"]
-                    break
-                case "Anglais":
-                    this.versionSelectionne =""
-                    this.versions=["EN001"]
-                    break
-                case "Japonais":
-                    this.versionSelectionne =""
-                    this.versions=["JP001","JP010"]
-            }
-        },
-        async remplirChamps(item){
-            this.langueSelectionne=await item.langue
-            this.versionSelectionne=await item.version
-            this.acteurSelectionne=item.acteur
-            this.idSousTitre=item.id
-            this.timecodeDebutSousTitre=item.timeCodeDebut
-            this.timecodeFinSousTitre=item.timeCodeFin
-            this.texteSousTitre=item.texte
-            this.zIndexSousTitre=item.zindex
-        },
-        async viderChamps(){
-            this.langueSelectionne=""
-            this.versionSelectionne=""
-            this.acteurSelectionne=""
-            this.idSousTitre=""
-            this.timecodeDebutSousTitre=""
-            this.timecodeDebutSousTitre=""
-            this.timecodeFinSousTitre=""
-            this.texteSousTitre=""
-            this.zIndexSousTitre=""
-        },
-        activationBouton(){
-            if(this.mode=="Creation"){
-                document.getElementById("supprimer").style.visibility = "hidden";
-                this.texteDuMode="Créer"
-            }
-            else{
-                document.getElementById("supprimer").style.visibility = "visible";
-                this.texteDuMode="Modifier"
-            }
-        },
-        //Quand on coche une CheckBox
-        cliqueCheckBox(){
-          this.miseAJoursEcran()
-        },        
-        //Quand on click sur une rangée
-        cliqueLignes(item,event) {
-          //Ternaire qui ajoute ou enleve l'element selectionner de la liste
-          const i=this.ligneSelectionnee.indexOf(event.item.id)
-          !this.ligneSelectionnee.includes(event.item.id)?this.ligneSelectionnee.push(event.item.id):this.ligneSelectionnee.splice(i,1)
-          this.miseAJoursEcran()
-        },
-        deSurlignageLignes(){
-          const trsS = Array.from(document.querySelectorAll(".v-data-table__tr--clickableSelected")).filter((l)=>!this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
-          trsS.forEach(tr=>{
-            tr.className="v-data-table__tr v-data-table__tr--clickable"
-          })
-        },
-        async miseAJoursEcran(){
+      async changerVersion(){
+        this.versionSelectionne=''
+        const langue = this.langues.find(langue=>langue.langue_id==this.langueSelectionne)
+        if(this.langueSelectionne!=""){
+          this.versions=[''].concat(await window.electron.ipcRenderer.invoke('electron:chargerVersionDeLangue',langue.langue_nom))
+        }else{
+          this.versions=[];
+        }
+        this.versionSelectionne=this.versions.length>0?this.versions[1].version_id:''
+      },
+      async remplirChamps(item){
 
-          //Si une seul ligne est selectionné
-          this.ligneSelectionnee.length===1?await this.remplirChamps(this.items.find(x=>x.id==this.ligneSelectionnee[0])):await this.viderChamps()
+          this.langueSelectionne=await item.version.langue.langue_id
+          this.versionSelectionne=await item.version.version_id
+          this.personnageSelectionne=await item.personnage==null?"":item.personnage.personnage_id
+          // this.acteurSelectionne=item.acteur
+          this.idSelectionne=item.ligne_id
+          this.timecodeDebutSelectionne=item.ligne_timecode_Debut
+          this.timecodeFinSelectionne=item.ligne_timecode_Fin
+          this.texteSelectionne=item.ligne_texte
+          this.zIndexSelectionne=item.ligne_z_index
+          this.couleurSelectionne=item.ligne_couleur_hexa
+      },
+      async viderChamps(){
+        if(this.ligneSelectionnee.length>1){
+          this.langueSelectionne=''
+          this.versionSelectionne=''
+        }else{
+          this.langueSelectionne=this.langues.length>1?this.langues[1].langue_id:''
+          this.versionSelectionne=this.versions.length>0?this.versions[1].version_id:''
+        }
 
-          if(this.ligneSelectionnee.length>=1){
-            this.mode="Modification"
-            this.texteDuMode="Modifier"
-          }
-          else{
-            this.mode="Creation"
+          //this.acteurSelectionne=""
+          this.idSelectionne=""
+          this.timecodeDebutSelectionne="00:00:00,000"
+          this.timecodeFinSelectionne="00:00:00,000"
+          this.texteSelectionne=""
+          this.zIndexSelectionne=1
+          this.couleurSelectionne=this.couleurs[0].code
+          this.personnageSelectionne=""
+      },
+      activationBouton(){
+        if(this.mode=="Creation"){
+            document.getElementById("supprimer").style.visibility = "hidden";
             this.texteDuMode="Créer"
+        }
+        else{
+            document.getElementById("supprimer").style.visibility = "visible";
+            this.texteDuMode="Modifier"
+        }
+      },
+      //Quand on coche une CheckBox
+      cliqueCheckBox(){
+        this.miseAJoursEcran()
+      },        
+      //Quand on click sur une rangée
+      cliqueLignes(event) {
+        //Ternaire qui ajoute ou enleve l'element selectionner de la liste
+        let uid = parseInt(event.target.parentNode.children[1].textContent);
+        if(this.ligneSelectionnee.includes(uid)){
+          let index = this.ligneSelectionnee.indexOf(uid)
+          this.ligneSelectionnee.splice(index,1)
+        }
+        else{
+          this.ligneSelectionnee.push(uid)
+        }
+        this.miseAJoursEcran()
+      },
+      deSurlignageLignes(){
+        const trsS = Array.from(document.querySelectorAll(".v-data-table__tr--clickableSelected")).filter((l)=>!this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
+        trsS.forEach(tr=>{
+          tr.className="v-data-table__tr v-data-table__tr--clickable"
+        })
+      },
+      async miseAJoursEcran(){
+        //Si une seul ligne est selectionné
+        //console.log(this.tableauSousTitre.find(x=>x.ligne_id==this.ligneSelectionnee[0]))
+        this.ligneSelectionnee.length===1?await this.remplirChamps(this.tableauSousTitre.find(x=>x.ligne_id_interne==this.ligneSelectionnee[0])):await this.viderChamps()
+        if(this.ligneSelectionnee.length>=1){
+          this.mode="Modification"
+          this.texteDuMode="Modifier"
+          if(this.personnages[0]!='Aucun'){
+            this.personnages=['Aucun'].concat(this.personnages)
           }
-          this.surlignageLignes()
-          this.deSurlignageLignes()
-        },
-        surlignageLignes(){
-          const trs = Array.from(document.querySelectorAll(".v-data-table__tr--clickable")).filter((l)=>this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
-          trs.forEach(tr=>{
-            tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
-          })
-        },
-    },  
-    async mounted(){
-
-        document.querySelector(".v-data-table-footer").innerHTML=""
-
-        this.itemParPage=this.items.length
-        this.messageInformatif=""
-        this.mode="Creation"
-        this.texteDuMode="Créer"
-        this.langues=["Francais","Anglais","Japonais"]
-        this.acteurs=["Boby","Jhonny","Mimi"]
+          if(this.couleurs[0]!=''){
+            this.couleurs=[''].concat(this.couleurs)
+          }
+        }
+        else{
+          this.mode="Creation" 
+          this.texteDuMode="Créer"
+          if(this.personnages[0]=='Aucun'){
+            this.personnages.splice(this.personnages[0],1)
+          }
+          if(this.couleurs[0]==''){
+            this.couleurs.splice(this.couleurs[0],1)
+          }
+        }
+        this.surlignageLignes()
+        this.deSurlignageLignes()
+      },
+      surlignageLignes(){
+        const trs = Array.from(document.querySelectorAll(".v-data-table__tr--clickable")).filter((l)=>this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
+        trs.forEach(tr=>{
+          tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
+        })
+      },
+      numeroterLigne(){
         let i=1
-
         document.querySelectorAll(".lignesNumero").forEach(row=>{
-            console.log(row)
             row.textContent=i
             i++
         })
+      },
+      async initialisationProps(){
         document.getElementById('video').src='fichier://'+this.cheminDeLaVideo;
         if(!await window.electron.ipcRenderer.invoke('electron:dbActive')){
-          await window.electron.ipcRenderer.send('electron:initialiserDatabase', this.cheminDeLaDatabase);
+          await window.electron.ipcRenderer.send('electron:initialiserDatabase', this.cheminDeLaDatabase)//voir pour attendre la reponse de la BDD
           await window.electron.ipcRenderer.send('electron:dbSwitchOn')
+          setTimeout(async()=>{await this.initialiserDonne()},500)//et supprimer ce timeOut
+        }else{
+          await this.initialiserDonne()
         }
+      },
+      async initialiserDonne(){
+        this.langues = [''].concat(await window.electron.ipcRenderer.invoke('electron:chargerLangue'))
+        //this.versions = await window.electron.ipcRenderer.invoke('electron:chargerVersion')
+        this.personnages = [''].concat(await window.electron.ipcRenderer.invoke('electron:chargerPersonnage'))
+        let tab = await window.electron.ipcRenderer.invoke('electron:chargerLigne')
+        tab.sort((a, b) => {
+
+          // Tri par le champ 'name' par défaut
+          return a.ligne_id_interne - b.ligne_id_interne;
+        })
+        this.tableauSousTitre=tab
+        this.itemParPage=this.tableauSousTitre.length
+        this.couleurSelectionne=this.couleurs[0].code
+        this.viderChamps()
+      },
+      async verifierDoublon(){
+        if(this.ligneSelectionnee.length==1 && this.ligneSelectionnee[0] == this.idSelectionne){
+          this.doublon=false
+        }
+        else{
+          this.doublon=false
+          this.tableauSousTitre.forEach(async l => {
+            if((l.ligne_id==this.idSelectionne && l.version_id ==this.versionSelectionne) || (this.idSelectionne!='' && this.versionSelectionne=='')){
+              this.doublon=true
+            }
+          });
+        }
+      },
+      async filtrerTableau(){
+        this.tableauSousTitre=[]
+      },
+      async test(){
+        this.tableauSousTitre=await  window.electron.ipcRenderer.invoke('electron:chargerLigne')
+        console.log(this.tableauSousTitre)
+      }
+
+  },  
+  async mounted(){
+      //Sert a enlever l'outil de pagination du v-data-table
+      document.querySelector(".v-data-table-footer").innerHTML=""
+      //Force toute les donnée a s'afficher dans le tableau
+      await this.initialisationProps()
     },
     watch:{
         langueSelectionne(){
@@ -330,14 +577,111 @@ export default {
         ,
         ligneSelectionnee(){
             this.cliqueCheckBox()
+        },
+        idSelectionne(){
+          this.verifierDoublon()
+        },
+        versionSelectionne(){
+          this.verifierDoublon()
+        },
+        personnageSelectionne(){
+
+        },
+        timecodeDebutSelectionne(){
+          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
+          if (regex.test(this.timecodeDebutSelectionne)) {
+            if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
+              let timeCodeDebut= this.timecodeDebutSelectionne.split(',')
+              let timecodeDetail= timeCodeDebut[0].split(':')
+              let heures=parseInt(timecodeDetail[0])
+              let minutes=parseInt(timecodeDetail[1])
+              let secondes=parseInt(timecodeDetail[2])
+              let miliseconde=parseInt(timeCodeDebut[1])
+
+              miliseconde++
+              if(miliseconde==1000){
+                miliseconde="000"
+                secondes++
+              }else{
+                miliseconde=miliseconde>=100?miliseconde.toString():miliseconde>=10?"0"+miliseconde:"00"+miliseconde
+              }
+              if(secondes>=60){
+                secondes="00"
+                minutes++
+              }else{
+                secondes=secondes>=10?secondes.toString():"0"+secondes
+              }
+              if(minutes>=60){
+                minutes="00"
+                heures++
+              }else{
+                minutes=minutes>=10?minutes.toString():"0"+minutes
+              }
+              heures=heures>=10?heures.toString():"0"+heures
+              this.timecodeFinSelectionne=heures+":"+minutes+":"+secondes+","+miliseconde 
+            }
+            this.creationModificationNOk=false
+          } else {
+            this.creationModificationNOk=true
+          }
+        },
+        timecodeFinSelectionne(){
+          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
+          if (regex.test(this.timecodeFinSelectionne)) {
+            if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
+            let timeCodeFin= this.timecodeFinSelectionne.split(',')
+            let timecodeDetail= timeCodeFin[0].split(':')
+            let heures=parseInt(timecodeDetail[0])
+            let minutes=parseInt(timecodeDetail[1])
+            let secondes=parseInt(timecodeDetail[2])
+            let miliseconde=parseInt(timeCodeFin[1])
+
+            miliseconde--
+            if(miliseconde<=0 && (heures>0 || minutes>0 || secondes>0)){
+              miliseconde="999"
+              secondes--
+            }else if(miliseconde<=0 && (heures<=0 && minutes<=0 && secondes<=0)){
+              miliseconde="000"
+            }else{
+              miliseconde=miliseconde>=100?miliseconde.toString():miliseconde>=10?"0"+miliseconde:"00"+miliseconde
+            }
+            if(secondes<=0 && (heures>0 || minutes>0)){
+              secondes="59"
+              minutes--
+            }else if(secondes==0 && (heures<=0 && minutes<=0)){
+              secondes="00"
+            }else{
+              secondes=secondes>=10?secondes.toString():"0"+secondes
+            }
+            if(minutes<=0 && heures>0){
+              minutes="59"
+              heures--
+            }else if(minutes<=0 && heures<=0){
+              minutes="00"
+              heures="00"
+            }else{
+              minutes=minutes>=10?minutes.toString():"0"+minutes
+            }
+            this.timecodeDebutSelectionne=heures+":"+minutes+":"+secondes+","+miliseconde 
+          }
+          if(this.timecodeFinSelectionne=="00:00:00,000"){
+            this.timecodeDebutSelectionne="00:00:00,000"
+            this.timecodeFinSelectionne="00:00:00,001"
+          }
+          this.creationModificationNOk=false
+        }else{
+          if(this.timecodeFinSelectionne=="100:00:00,000"){
+            this.timecodeDebutSelectionne="00:00:00,000"
+            this.timecodeFinSelectionne="00:00:00,001"
+          }
+          this.creationModificationNOk=true
         }
+      }
     },
     created() {
       const propVideo = this.$route.query.propVideo;
       const propDatabase = this.$route.query.propDatabase;
       
-      console.log("PropVideo après la redirection :", propVideo);
-      console.log("PropDatabase après la redirection :", propDatabase);
 
       if (typeof propVideo === 'string') {
         this.cheminDeLaVideo = propVideo;
@@ -400,17 +744,18 @@ export default {
             width: 100%;
             border: 1px double #86a5b1;
             display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 6 colonnes égales */
+            grid-template-columns: repeat(7,1fr); /* 8 colonnes égales */
             gap: 10px; /* Espacement entre les éléments */
             grid-template-areas:
-                "zone1 zone1 . . . . ."
-                "zone2 zone2 . . . zone3 zone3"
-                "zone4 zone4 . . . zone5 zone5"
-                "zone6 zone7 zone8 zone9 zone10 tzone11 tzone11"
-                "zone12 zone12 zone12 zone12 zone12 zone12 zone12"
-                "zone12 zone12 zone12 zone12 zone12 zone12 zone12"
-                "zone13 zone14 . . . . zone15"
-                "zone16 zone16 . . . . .";
+                "zone1 zone1 zone1 . . . . ."
+                "zone2 zone2 zone2 zone3 zone7 zone7 zone7 zone12"
+                "zone4 zone4 zone4 zone5 zone6 zone6 zone6 ."
+                "zone10 zone8 zone8 zone8 zone9 zone9 zone9 zone11"
+                "zone13 zone13 zone13 zone13 zone13 zone13  zone13 zone13"
+                "zone13 zone13 zone13 zone13 zone13 zone13  zone13 zone13"
+                "zone14 zone14 zone15 zone15 . . . zone16"
+                "zone17 zone17 . . . . . ."
+                ;
                 .gridArea:nth-child(1){grid-area: zone1;}
                 .gridArea:nth-child(2){grid-area: zone2;}
                 .gridArea:nth-child(3){grid-area: zone3;}
@@ -418,15 +763,19 @@ export default {
                 .gridArea:nth-child(5){grid-area: zone5;}
                 .gridArea:nth-child(6){grid-area: zone6;}
                 .gridArea:nth-child(7){grid-area: zone7;}
-                .gridArea:nth-child(8){grid-area: zone8;}
-                .gridArea:nth-child(9){grid-area: zone9;}
+                .gridArea:nth-child(8){grid-area: zone8;                  
+                  display: flex;}
+                .gridArea:nth-child(9){grid-area: zone9;                  
+                  display: flex;}
                 .gridArea:nth-child(10){grid-area: zone10;}
-                .gridArea:nth-child(11){grid-area: tzone11;}
+                .gridArea:nth-child(11){grid-area: zone11;}
                 .gridArea:nth-child(12){grid-area: zone12;}
                 .gridArea:nth-child(13){grid-area: zone13;}
                 .gridArea:nth-child(14){grid-area: zone14;}
                 .gridArea:nth-child(15){grid-area: zone15;}
                 .gridArea:nth-child(16){grid-area: zone16;}
+                .gridArea:nth-child(17){grid-area: zone17;}
+
         }
 
     }

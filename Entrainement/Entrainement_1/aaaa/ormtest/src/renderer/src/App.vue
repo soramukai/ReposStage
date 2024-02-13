@@ -1,7 +1,7 @@
 <!-- App.vue -->
 
 <script lang="ts">
-import Inventaire from './components/Inventaire.vue';
+import VideoSelect from './components/VideoSelect.vue';
 
 export default {
   data() {
@@ -10,14 +10,14 @@ export default {
     };
   },
   components: {
-    Inventaire,
+    VideoSelect,
   },
 };
 </script>
 
 <template>
   <div>
-    <Inventaire />
+    <VideoSelect />
     <p></p>
   </div>
 </template>

@@ -1,7 +1,6 @@
 //@ts-nocheck
 import { Entity, PrimaryGeneratedColumn, Column  } from 'typeorm';
 import dbConnection from '../Class/dbConnection.ts';
-import { json } from 'stream/consumers';
 
 @Entity()
 export class EntiteeLangue{
