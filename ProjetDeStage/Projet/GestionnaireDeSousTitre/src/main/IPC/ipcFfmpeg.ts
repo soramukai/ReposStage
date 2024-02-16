@@ -3,12 +3,11 @@ import ffmpeg from 'fluent-ffmpeg'
 
 export default class ipcFfmpeg{
     static initialisation(){
-        ipcMain.on('electron:SendVideo', (event, filePath,_fileLocation) => {
+        ipcMain.on('electron:SendVideo', (event, filePath: string,_fileLocation: string) => {
 
         // Logique de conversion FFmpeg ici
-        const outputFilePath =_fileLocation;
-        const ffmpegProcess = ffmpeg(filePath)
-          .output(outputFilePath)
+        ffmpeg(filePath)
+          .output(_fileLocation)
           .on('start', (commandLine) => {
             console.log(`Conversion en cours: ${commandLine}`);
           })

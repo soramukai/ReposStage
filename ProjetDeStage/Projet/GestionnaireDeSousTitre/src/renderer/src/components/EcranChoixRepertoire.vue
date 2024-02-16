@@ -227,8 +227,10 @@ export default {
       await window.electron.ipcRenderer.send('electron:copierElement',_elementACopier[0].path,this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+nomElementACopier)
     },
     async supprimerUnElement(_fichierASupprimer){
-      await window.electron.ipcRenderer.send('electron:supprimerElement',_fichierASupprimer)
-      this.chargerRepertoire()
+      if (confirm("Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!")){
+        await window.electron.ipcRenderer.send('electron:supprimerElement',_fichierASupprimer)
+        this.chargerRepertoire()
+      }
     },
     filtrerParExtension(_fichiers: string[],_extensionsAcceptees:string[]): string[] {
       const fichers = _fichiers.filter((fichier) => {

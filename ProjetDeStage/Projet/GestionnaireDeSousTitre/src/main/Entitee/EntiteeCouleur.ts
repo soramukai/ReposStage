@@ -1,7 +1,6 @@
-//@ts-nocheck
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany  } from 'typeorm';
-import dbConnection from '../Class/dbConnection.ts';
-import { json } from 'stream/consumers';
+import { Entity, PrimaryGeneratedColumn, Column, Repository  } from 'typeorm';
+import dbConnection from '../Class/dbConnection';
+import {JsonPersonnageLangueCouleur} from '../Interface/InterfaceJson'
 
 @Entity()
 export class EntiteeCouleur{
@@ -12,26 +11,28 @@ export class EntiteeCouleur{
     couleur_nom: string
 
 }
-export async function creerCouleur(_json: JSON){
-    const table = dbConnection.dataSource.getRepository(EntiteeCouleur)
-    let check = await table.find({where:{
+
+export async function creerCouleur(_json: JsonPersonnageLangueCouleur):Promise<void>{
+    const table: Repository<EntiteeCouleur>|undefined = dbConnection.dataSource?.getRepository(EntiteeCouleur)
+    let check: EntiteeCouleur|null|undefined = await table?.findOne({where:{
         couleur_nom:_json.nom,
     }})
-    if(check.length==0){
-        const couleur = new EntiteeCouleur();
-        if(_json.id!=-1){
-            couleur.couleur_id=_json.id
+    if(!check){
+        const couleur:EntiteeCouleur = new EntiteeCouleur();
+        if(_json.id != -1){
+            couleur.couleur_id = _json.id
         }
-        couleur.couleur_nom=_json.nom;
-        await table.save(couleur)
+        couleur.couleur_nom = _json.nom;
+        await table?.save(couleur)
         console.log("La ligne à été sauvegardé")
     }
     else{
         console.error("La ligne existe deja")
     }
 }
-export async function chargerCouleur(){
-    const table = dbConnection.dataSource.getRepository(EntiteeCouleur)
-    return await table.find()
+
+export async function chargerCouleur():Promise<EntiteeCouleur[]>{
+    const table: Repository<EntiteeCouleur>|undefined = dbConnection.dataSource?.getRepository(EntiteeCouleur)
+    return table? await table.find():[]
 }
 

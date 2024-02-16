@@ -1,16 +1,12 @@
-import { app, shell, BrowserWindow,ipcMain,protocol,net  } from 'electron'
-import { join } from 'path'
+import { app, BrowserWindow  } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
-import IpcDb from './IPC/IpcDb.ts';
-import ipcFfmpeg from './IPC/ipcFfmpeg.ts';
-import ipcRepertoire from './IPC/ipcRepertoire.ts'
-import  dbConnection  from './Class/dbConnection.ts';
-import protocolFichierLocal from './protocol/protocolFichierLocal.ts';
-import IpcDb2 from './IPC/ipcDb2';
-
-const path = require('path');
-const url = require('url');
+import icon from '../../resources/icon.png'
+import IpcDb from './IPC/IpcDb';
+import ipcFfmpeg from './IPC/ipcFfmpeg';
+import ipcRepertoire from './IPC/ipcRepertoire'
+import  dbConnection  from './Class/dbConnection';
+import protocolFichierLocal from './protocol/protocolFichierLocal';
+import * as path from'path'
 
 
 let mainWindow:BrowserWindow
@@ -24,7 +20,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,
       //webSecurity: false
     }
@@ -47,7 +43,7 @@ function createWindow(): void {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
 
 

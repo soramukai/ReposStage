@@ -1,7 +1,8 @@
-//@ts-nocheck
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, RelationId } from 'typeorm';
-import {EntiteeLangue} from './EntiteeLangue.ts'
-import dbConnection from '../Class/dbConnection.ts';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Repository,OneToMany } from 'typeorm';
+import {EntiteeLangue} from './EntiteeLangue'
+import dbConnection from '../Class/dbConnection';
+import { EntiteeLigne } from './EntiteeLigne';
+import {JsonVersion} from '../Interface/InterfaceJson';
 
 @Entity()
 export class EntiteeVersion{
@@ -11,30 +12,29 @@ export class EntiteeVersion{
     @Column()
     version_nom: string
 
-    @Column()
+    @Column({nullable: false})
     langue_id: number
 
-    @ManyToOne(() => EntiteeLangue,langue => langue.versions,{onDelete:"CASCADE"})
+    @ManyToOne(() => EntiteeLangue,langue => langue.versions,{onDelete:"CASCADE",nullable:false})
     @JoinColumn({name:'langue_id'})
     langue: EntiteeLangue;
+
+    @OneToMany(() => EntiteeLigne, ligne => ligne.version)
+    lignes: EntiteeLigne[];
+
 }
-export async function creerVersion(_version: JSON){
-    const table = dbConnection.dataSource.getRepository(EntiteeVersion)
-    let check = await table.find({where:{
-        version_nom: _version.nom,
-    }})
-    if(check.length==0){
-        const version = new EntiteeVersion();
-        version.version_nom=_version.nom;
 
-        //Ajouter try catch sur la detection de foreignkey
-        const langue =  dbConnection.dataSource.getRepository(EntiteeLangue)
-        let langueRef = null
-        langueRef = await langue.findOne({where:{langue_id:_version.langue_id}})
-        version.langue = langueRef
-
-        ///////////////////////
-        await table.save(version)
+export async function creerVersion(_version: JsonVersion): Promise<void>{
+    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+    let check: EntiteeVersion|null|undefined = await table?.findOne({
+        where:{
+            version_nom: _version.nom
+    }});
+    if(!check){
+        const version: EntiteeVersion = new EntiteeVersion();
+        version.langue_id = _version.langue_id
+        version.version_nom = _version.nom;
+        await table?.save(version)
         console.log("La ligne à été sauvegardé")
     }
     else{
@@ -42,43 +42,42 @@ export async function creerVersion(_version: JSON){
     }
 }
 
-export async function chargerVersion(){
-    const table = dbConnection.dataSource.getRepository(EntiteeVersion)
-    return await table.find({ relations: ['langue'] });
+export async function chargerVersion(): Promise<EntiteeVersion[]>{
+    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+    return table? await table.find({ relations: ['langue'] }):[];
 }
 
-export async function chargerVersionDeLangue(_nomLangue: string):JSON {
-    const tableVersion = dbConnection.dataSource.getRepository(EntiteeVersion);
-    const tableLangue = dbConnection.dataSource.getRepository(EntiteeLangue);
+export async function chargerVersionDeLangue(_nomLangue: string): Promise<EntiteeVersion[]> {
+    const tableVersion: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion);
+    const tableLangue: Repository<EntiteeLangue>|undefined = dbConnection.dataSource?.getRepository(EntiteeLangue);
 
-    const langue = await tableLangue.findOne({ where: { langue_nom: _nomLangue } });
+    const langue: EntiteeLangue|null|undefined = await tableLangue?.findOne({ 
+        where: { 
+            langue_nom: _nomLangue 
+    }});
     if (langue) {
-        const versions = await tableVersion.find({ where: { langue_id: langue.langue_id },relations: ['langue']});
-        return versions;
+        const versions: EntiteeVersion[]|undefined = await tableVersion?.find({ 
+            where: { 
+                langue_id: langue.langue_id },relations: ['langue']
+        });
+        return versions?versions:[];
     } else {
         return []; // Ou vous pouvez gérer différemment le cas où la langue n'est pas trouvée
     }
 }
 
-export async function modifierVersion(_idVersionAModifier:number,_json:JSON){
-    const table = dbConnection.dataSource.getRepository(EntiteeVersion)
-    let check = await table.findOne({where:{
-        version_id:_idVersionAModifier,
+export async function modifierVersion(_idVersionAModifier:number,_json:JsonVersion): Promise<void>{
+    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+    const check:EntiteeVersion|null|undefined = await table?.findOne({
+        where:{
+            version_id:_idVersionAModifier
     }})
-    if(check!=undefined){
-        if(_json.nom!=""){
-            check.version_nom=_json.nom;
-        }
-        const langue =  dbConnection.dataSource.getRepository(EntiteeLangue)
-        let langueRef = "" 
-        langueRef = await langue.find({where:{langue_id:_json.langue_id}})
+    if(check){
+        check.version_nom = _json.nom ? _json.nom : check.version_nom;
+        check.langue_id = _json.langue_id ? _json.langue_id : check.langue_id;
 
 
-
-        if(langueRef.length>0){
-            check.langue=langueRef[0]
-        }
-        await table.save(check)
+        await table?.save(check)
         console.log("La ligne à été modifié")
     }
     else{
@@ -86,12 +85,11 @@ export async function modifierVersion(_idVersionAModifier:number,_json:JSON){
     }
 }
 
-export async function supprimerVersion(_idASupprimer:number){
-    const table=dbConnection.dataSource.getRepository(EntiteeVersion)
-    let check = await table.findOne({where:{version_id:_idASupprimer}}) 
-    
-    if(check!=undefined){
-        await table.remove(check)
+export async function supprimerVersion(_idASupprimer:number): Promise<void>{
+    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+    const check: EntiteeVersion|null|undefined = await table?.findOne({where:{version_id:_idASupprimer}}) 
+    if(check){
+        await table?.remove(check)
         console.log("La ligne a été supprimé")
     }
     else{

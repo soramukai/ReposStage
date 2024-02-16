@@ -16,8 +16,9 @@
                 </v-row>
                 <div id="selectionAffichage">
                   <v-select 
+                    :hide-details=true
                     class="selectionAffichage"
-                    multiple=""
+                    multiple
                     variant="outlined"
                     label="Langue"
                     :items="languesVisible"
@@ -26,8 +27,9 @@
                     item-value="langue_id">
                   </v-select>
                   <v-select 
+                    :hide-details=true
                     class="selectionAffichage"
-                    multiple=""
+                    multiple
                     variant="outlined"
                     label="Version"
                     :items="versionsVisible"
@@ -36,8 +38,9 @@
                     item-value="version_id">
                   </v-select>
                   <v-select 
+                    :hide-details=true
                     class="selectionAffichage"
-                    multiple=""
+                    multiple
                     variant="outlined"
                     label="Acteur"
                     :items="personnagesVisible"
@@ -46,17 +49,9 @@
                     item-value="personnage_id">
                   </v-select>
                 </div>
-                <!-- REMPLACER la textarea par une dive, et y mettre une classe qui fera un overflow en display flex et je pourrais y appliquer les couleur pour le texte
-                Je pourrais aussi plus facilement penser au defilmement du texte -->
-                <v-textarea
-                  class="no-resize"
-                  readonly=""
-                  variant="outlined"
-                  rows="4"
-                  v-model="bandeRythmo"
-                  ref="bandeRythmo"
-                  :no-resize="true">
-                </v-textarea>
+                <div 
+                  id="bandeRythmo">
+                </div>
             </div>
 
             <div class="videoGestionSousTitre">
@@ -215,26 +210,28 @@
                   @click="supprimerSousTitre">
                     Supprimer
                 </v-btn>
-                <v-btn 
+                <v-text-field 
                   class="gridArea" 
-                  variant="tonal"
-                  @click="filtrerTableau">
-                    Filtrer
-                </v-btn>
+                  label="Message:"
+                  v-model="messageInformatif"
+                  :hide-details=true
+                  readonly>
+                </v-text-field>
             </div>
         </div>
 
         <div 
           class="section">
             <v-data-table
-                v-model="ligneSelectionnee"
-                :items="tableauSousTitre"  
-                :headers="enteteTableau"
-                item-value="ligne_id_interne"
-                :items-per-page="itemParPage"
-                show-select
-                @click:row="cliqueLignes"
-                :height="tableHeight">
+              fixed-header
+              v-model="ligneSelectionnee"
+              :items="tableauSousTitre"  
+              :headers="enteteTableau"
+              item-value="ligne_id_interne"
+              :items-per-page="itemParPage"
+              show-select
+              @click:row="cliqueLignes"
+              :height="tableHeight">
             </v-data-table>
         </div>
 
@@ -252,15 +249,10 @@
             </v-btn>
             <v-btn 
               class="bouton optionProjet" 
-              variant="tonal"
-              @click="test">
+              variant="tonal">
                 Sauvegarder
             </v-btn>
-            <v-text-field 
-              class="input optionProjet" 
-              readonly>
-                {{ messageInformatif }}
-            </v-text-field>
+
 
             <router-link 
               class="route" 
@@ -277,37 +269,36 @@
 </template>
 
 <script lang="ts">
-//@ts-nocheck
-import Lignes from '../class/Lignes.ts'
+import { LocationQueryValue } from 'vue-router'
+import Lignes from '../class/Lignes'
+import {JsonCouleur, JsonLangue, JsonLigne, JsonPersonnage, JsonVersion} from '../Interface/Interface'
 export default {
     data(){
         return{
           //Variable V-model
-          idSelectionne:"",
-          personnageSelectionne:"",
-          timecodeDebutSelectionne:"00:00:00,000",
-          timecodeFinSelectionne:"00:00:00,001",
-          zIndexSelectionne:1,
-          couleurSelectionne:"",
-          texteSelectionne:"",
-          langueSelectionne:"",
-          versionSelectionne:"",
-          acteurSelectionne:"",
-          ligneSelectionnee: [],	
+          idSelectionne:undefined as number|string|undefined,
+          personnageSelectionne:undefined as number|string|undefined,
+          timeCodeRegEx:/^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/ as RegExp,
+          timecodeDebutSelectionne:undefined as string|undefined,
+          timecodeFinSelectionne:undefined as string|undefined,
+          zIndexSelectionne:undefined as number|string|undefined,
+          couleurSelectionne:undefined as string|undefined,
+          texteSelectionne:undefined as string|undefined,
+          langueSelectionne:undefined as number|string|undefined,
+          versionSelectionne:undefined as number|string|undefined,
+          ligneSelectionnee: [] as number[],	
           //Variable Items
-          langues:[],
-          versions:[],
-          acteurs:[],
-          personnages:[],
-          couleurs:[],      
-          tableauSousTitre:[],  
+          langues:[] as JsonLangue[],
+          versions:[] as JsonVersion[],
+          personnages:[] as JsonPersonnage[],  
+          tableauSousTitre:[] as JsonLigne[],  
           //tableau de preference de lecture
-          languesVisible:[],
-          versionsVisible:[],
-          personnagesVisible:[],
-          languesVisibleSelectionne:[],
-          versionsVisibleSelectionne:[],
-          personnagesVisibleSelectionne:[],
+          languesVisible:[] as number[],
+          versionsVisible:[] as number[],
+          personnagesVisible:[] as number[],
+          languesVisibleSelectionne:[] as number[],
+          versionsVisibleSelectionne:[] as number[],
+          personnagesVisibleSelectionne:[] as number[],
           //proprieter du tableau
           enteteTableau:[
             {title:'UID',value:'ligne_id_interne',sortable:true},
@@ -319,43 +310,42 @@ export default {
             {title:'z-index',value:'ligne_z_index',sortable:true},
             {title:'Texte',value:'ligne_texte',sortable:true},
             {title:'Personnage',value:'personnage.personnage_nom',sortable:true},
-            {title:'Couleur',value:'ligne_couleur'}
+            {title:'Couleur',value:'ligne_couleur',sortable:true}
           ],
           couleurs:[
             {"nom":"par defaut","code":"#85A4B1"},
             { "nom": "Noir", "code": "#000000" },
             { "nom": "Blanc", "code": "#FFFFFF" },
-            { "nom": "Bleu", "code": "#0000FF" },
+            { "nom": "Bleu", "code": "#2EFEF7" },
             { "nom": "Rouge", "code": "#FF0000" },
             { "nom": "Vert", "code": "#00FF00" },
             { "nom": "Rose", "code": "#FFC0CB" },
             { "nom": "Jaune", "code": "#FFFF00" },
             { "nom": "Orange", "code": "#FFA500" },
             { "nom": "Violet", "code": "#8A2BE2" }
-          ],
-          tableHeight: 450, // Hauteur maximale du tableau en pixels  
+          ] as JsonCouleur[],
+          tableHeight: 400 as number, // Hauteur maximale du tableau en pixels  
           //Prop
-          cheminDeLaVideo:"",
-          cheminDeLaDatabase:"",
+          cheminDeLaVideo:"" as string,
+          cheminDeLaDatabase:"" as string,
           //Variable d'interface
-          messageInformatif:"",
-          texteDuMode:"Créer",	
-          itemParPage:10,
-          mode:"Creation",
-          doublon:false,
-          bandeRythmo:"",
-          creationModificationNOk:false,
+          messageInformatif:"" as string,
+          texteDuMode:"Créer" as string,	
+          itemParPage:10 as number,
+          mode:"Creation" as string,
+          doublon:false as boolean,
+          bandeRythmo:"" as string,
+          creationModificationNOk:false as boolean,
         }
     },
     methods:{
-      async filtrerTableau(){
-        console.log("ee")
-        let tableauFiltre3=[]
-        let tableauFiltre1=[]
-        let tableauFiltre2=[]
+      async filtrerTableau(): Promise<void>{
+        let tableauFiltre3:JsonLigne[]=[]
+        let tableauFiltre1:JsonLigne[]=[]
+        let tableauFiltre2:JsonLigne[]=[]
         if(this.languesVisibleSelectionne.length>0){
           this.languesVisibleSelectionne.forEach(async lv=>{
-            this.tableauSousTitre.forEach(async st=>{
+            this.tableauSousTitre.forEach(st=>{
               if(lv==st.version.langue.langue_id){
                 tableauFiltre1.push(st)
               }
@@ -387,8 +377,10 @@ export default {
           tableauFiltre3=tableauFiltre2
         }
         this.tableauSousTitre=tableauFiltre3
+        this.changementTimeCode()
       },
-      async actualiserTableau(){
+      async actualiserTableau(): Promise<void>{
+        // @ts-ignore (define in dts)
         this.tableauSousTitre= await window.electron.ipcRenderer.invoke('electron:chargerLigne')
         let tab = this.tableauSousTitre
         tab.sort((a, b) => {
@@ -400,90 +392,107 @@ export default {
         this.ligneSelectionnee=[]
         this.filtrerTableau()
       },
-      async creationModification(){
-        let ligne=null
-        let couleurNom=""
-        let couleurCode=""
+      async creationModification(): Promise<void>{
+        let ligne: Lignes|null = null
+        let couleurNom: string|undefined=""
+        let couleurCode: string|undefined=""
         if(this.couleurSelectionne!=''&&this.couleurSelectionne!=undefined){
-          couleurCode=this.couleurSelectionne
-          couleurNom=this.couleurs.find(c=>c.code==this.couleurSelectionne).nom
+          couleurCode=this.couleurSelectionne==""?"#85A4B1":this.couleurSelectionne
+          couleurNom=couleurCode? this.couleurs.find(c=>c.code==this.couleurSelectionne)?.nom:undefined
         }
         ligne=new Lignes(
-            this.idSelectionne==""?undefined:this.idSelectionne,
-            this.versionSelectionne,
-            this.timecodeDebutSelectionne,
-            this.timecodeFinSelectionne,
-            this.zIndexSelectionne,
-            this.texteSelectionne,
-            this.personnageSelectionne,
-            couleurNom,
-            couleurCode
+            this.idSelectionne==""?undefined:this.idSelectionne as number,
+            this.versionSelectionne==""?undefined:this.versionSelectionne as number,
+            this.timecodeDebutSelectionne==""?undefined:this.timecodeDebutSelectionne as string,
+            this.timecodeFinSelectionne==""?undefined:this.timecodeFinSelectionne as string,
+            this.zIndexSelectionne==""?undefined:this.zIndexSelectionne as number,
+            this.texteSelectionne==""?undefined:this.texteSelectionne as string,
+            this.personnageSelectionne=="Aucun"?-1:this.personnageSelectionne==""?undefined:this.personnageSelectionne as number,
+            couleurNom=couleurNom,
+            couleurCode=couleurCode
           )
         if(this.mode=='Creation'){
-          await window.electron.ipcRenderer.send('electron:creerLigne',ligne)
+          // @ts-ignore (define in dts)
+          window.electron.ipcRenderer.send('electron:creerLigne',ligne)
         }else{
-          this.ligneSelectionnee.forEach(async l=>{
-            await window.electron.ipcRenderer.send('electron:modifierLigne',l,ligne)
+          this.ligneSelectionnee.forEach(l=>{
+            // @ts-ignore (define in dts)
+            window.electron.ipcRenderer.send('electron:modifierLigne',l,ligne)
           })
         }
         setTimeout(async()=>{await this.actualiserTableau()},100)
       },
-      async supprimerSousTitre(){
-        await this.ligneSelectionnee.forEach(async i=>{
-          await window.electron.ipcRenderer.send('electron:supprimerSousTitre',i)
-        })
-        this.tableauSousTitre=[]
-        this.ligneSelectionnee=[]
-        setTimeout(async()=>{await this.actualiserTableau()},1)
+      async supprimerSousTitre(): Promise<void>{
+        if (confirm("Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!")){
+          this.ligneSelectionnee.forEach(async i=>{
+            // @ts-ignore (define in dts)
+             window.electron.ipcRenderer.send('electron:supprimerSousTitre',i)
+          })
+          this.tableauSousTitre=[]
+          this.ligneSelectionnee=[]
+          setTimeout(async()=>{await this.actualiserTableau()},1)
+          }
       },
-      async changementTimeCode(){
-        let currentTime = this.$refs.video.currentTime;
+      changementTimeCode(): void{
+        let currentTime: number = (this.$refs.video as HTMLVideoElement).currentTime;
         let sousTitresActifs = this.tableauSousTitre.filter(l => {
           let debut = this.timeCodeFormatage(l.ligne_timecode_Debut);
           let fin = this.timeCodeFormatage(l.ligne_timecode_Fin);
           return debut <= currentTime && fin > currentTime;
         });
         if(sousTitresActifs){
-          let script = ""
+          let balise: HTMLElement|null = document.getElementById('bandeRythmo')
           sousTitresActifs.reverse()
-          sousTitresActifs.forEach(s=>{
-            script +=(s.personnage==null?"---:"+s.ligne_texte:s.personnage.personnage_nom+": "+s.ligne_texte) +"\n"
-          })
-          this.bandeRythmo = script
+          if(balise){
+            balise.innerHTML=''
+            sousTitresActifs.forEach(s=>{
+              let p = document.createElement('p')   
+              p.textContent =(s.personnage==null?"---:"+s.ligne_texte:s.personnage.personnage_nom+": "+s.ligne_texte) +"\n"
+              let color = 'color: '+s.ligne_couleur_hexa
+              p.setAttribute('style',color)
+              balise?.appendChild(p)
+            })
+          }
         }
         else{
           this.bandeRythmo="";
         }
       },
-      preRemplirTimecodeDebut(){
-        let currentTime = this.$refs.video.currentTime;
+      preRemplirTimecodeDebut(): void{
+        let currentTime: number = (this.$refs.video as HTMLVideoElement).currentTime;
         this.timecodeDebutSelectionne=this.convertirTempsEnFormat(currentTime)
       },
-      preRemplirTimecodeFin(){
-        let currentTime = this.$refs.video.currentTime;
+      preRemplirTimecodeFin(): void{
+        let currentTime: number = (this.$refs.video as HTMLVideoElement).currentTime;
         this.timecodeFinSelectionne=this.convertirTempsEnFormat(currentTime)
       },
-      timeCodeFormatage(_timecodeString){
-      let timecodeConverted = 0
-      let timecodeArrayms = _timecodeString.split(',')
-      let timecodeArrays = timecodeArrayms[0].split(':')
-      let seconde=parseInt(timecodeArrays[2])+parseInt(timecodeArrays[1]*60)+parseInt(timecodeArrays[0]*3600)
-      let miliseconde = parseFloat(timecodeArrayms[1]/1000)
-      timecodeConverted = parseFloat(seconde+miliseconde)
-      return timecodeConverted
+      timeCodeFormatage(_timecodeString): number{
+        let timecodeConverted: number = 0;
+        let timecodeArrayms: string[] = _timecodeString.split(',');
+        let timecodeArrays: string[] = timecodeArrayms[0].split(':');
+        let heures: number = parseInt(timecodeArrays[0]);
+        let minutes: number = parseInt(timecodeArrays[1]);
+        let secondes: number = parseInt(timecodeArrays[2]);
+        // Convertir les heures, minutes et secondes en secondes
+        let totalSeconds: number = heures * 3600 + minutes * 60 + secondes;
+        // Convertir les millisecondes en secondes
+        let millisecondes: number = parseFloat(timecodeArrayms[1]) / 1000;
+        // Ajouter les secondes et les millisecondes
+        timecodeConverted = totalSeconds + millisecondes;
+        return timecodeConverted;
       },
-      convertirTempsEnFormat(timeInSeconds) {
+      convertirTempsEnFormat(timeInSeconds): string {
         // Convertir les secondes en heures, minutes et secondes
-        let heures = Math.floor(timeInSeconds / 3600);
-        let minutes = Math.floor((timeInSeconds % 3600) / 60);
-        let secondes = Math.floor(timeInSeconds % 60);
+        let heures: number = Math.floor(timeInSeconds / 3600);
+        let minutes: number = Math.floor((timeInSeconds % 3600) / 60);
+        let secondes: number = Math.floor(timeInSeconds % 60);
         // Convertir les millisecondes en trois chiffres
-        let millisecondes = Math.floor((timeInSeconds - Math.floor(timeInSeconds)) * 1000);
+        let millisecondes: number = Math.floor((timeInSeconds - Math.floor(timeInSeconds)) * 1000);
         // Formater la chaîne de temps
-        let formattedTime = `${heures.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')},${millisecondes.toString().padStart(3, '0')}`;
+        let formattedTime: string = `${heures.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')},${millisecondes.toString().padStart(3, '0')}`;
         return formattedTime;
       },
-      ouvrirFenettreGestionLVA(page) {
+      ouvrirFenettreGestionLVA(page): void{
         this.$router.push({
           path: '/modification-lva',
           query: {
@@ -493,23 +502,22 @@ export default {
           }, 
         });
       },
-      async changerVersion(){
-        this.versionSelectionne=''
-        const langue = this.langues.find(langue=>langue.langue_id==this.langueSelectionne)
-        if(this.langueSelectionne!=""){
-          this.versions=await window.electron.ipcRenderer.invoke('electron:chargerVersionDeLangue',langue.langue_nom)  
+      async changerVersion(): Promise<void>{
+        this.versionSelectionne = ''
+        const langue: JsonLangue|undefined = this.langues.find(langue=>langue.langue_id == this.langueSelectionne)
+        if(this.langueSelectionne != ""){
+          // @ts-ignore (define in dts)
+          this.versions = await window.electron.ipcRenderer.invoke('electron:chargerVersionDeLangue',langue?.langue_nom)  
         }else{
           this.versions=[];
         }
-        this.versionSelectionne=this.versions.length>0?this.versions[0].version_id:''
+        this.versionSelectionne = this.versions.length>0?this.versions[0].version_id:''
       },
-      async remplirChamps(item){
-
+      async remplirChamps(item): Promise<void>{
           this.langueSelectionne=await item.version.langue.langue_id
           await new Promise(resolve => setTimeout(resolve, 10));
           this.versionSelectionne=await item.version.version_id
           this.personnageSelectionne=await item.personnage==null?"":item.personnage.personnage_id
-          // this.acteurSelectionne=item.acteur
           this.idSelectionne=item.ligne_id
           this.timecodeDebutSelectionne=item.ligne_timecode_Debut
           this.timecodeFinSelectionne=item.ligne_timecode_Fin
@@ -517,7 +525,7 @@ export default {
           this.zIndexSelectionne=item.ligne_z_index
           this.couleurSelectionne=item.ligne_couleur_hexa
       },
-      async viderChamps(){
+      viderChamps(): void{
         if(this.ligneSelectionnee.length>1){
           this.langueSelectionne=''
           this.versionSelectionne=''
@@ -525,8 +533,6 @@ export default {
           this.langueSelectionne=this.langues.length>1?this.langues[1].langue_id:''
           this.versionSelectionne=this.versions.length>0?this.versions[0].version_id:''
         }
-
-          //this.acteurSelectionne=""
           this.idSelectionne=""
           this.timecodeDebutSelectionne=this.ligneSelectionnee.length>1?'':"00:00:00,000"
           this.timecodeFinSelectionne=this.ligneSelectionnee.length>1?'':"00:00:00,001"
@@ -535,26 +541,26 @@ export default {
           this.couleurSelectionne=this.couleurs[0].code
           this.personnageSelectionne=""
       },
-      activationBouton(){
+      activationBouton(): void{
         if(this.mode=="Creation"){
-            document.getElementById("supprimer").style.visibility = "hidden";
+            (document.getElementById("supprimer") as HTMLElement).style.visibility = "hidden";
             this.texteDuMode="Créer"
         }
         else{
-            document.getElementById("supprimer").style.visibility = "visible";
+            (document.getElementById("supprimer") as HTMLElement).style.visibility = "visible";
             this.texteDuMode="Modifier"
         }
       },
       //Quand on coche une CheckBox
-      cliqueCheckBox(){
+      cliqueCheckBox(): void{
         this.miseAJoursEcran()
       },        
       //Quand on click sur une rangée
-      cliqueLignes(event) {
+      cliqueLignes(event): void{
         //Ternaire qui ajoute ou enleve l'element selectionner de la liste
-        let uid = parseInt(event.target.parentNode.children[1].textContent);
+        let uid: number = parseInt(event.target.parentNode.children[1].textContent);
         if(this.ligneSelectionnee.includes(uid)){
-          let index = this.ligneSelectionnee.indexOf(uid)
+          let index: number = this.ligneSelectionnee.indexOf(uid)
           this.ligneSelectionnee.splice(index,1)
         }
         else{
@@ -562,65 +568,76 @@ export default {
         }
         this.miseAJoursEcran()
       },
-      deSurlignageLignes(){
-        const trsS = Array.from(document.querySelectorAll(".v-data-table__tr--clickableSelected")).filter((l)=>!this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
+      deSurlignageLignes(): void{
+        const trsS: Element[] = Array.from(document.querySelectorAll(".v-data-table__tr--clickableSelected")).filter((l) => {
+          const child: Element = l.children?.[1];
+          return !this.ligneSelectionnee.includes(parseInt(child?.textContent ?? ''));
+        });
         trsS.forEach(tr=>{
           tr.className="v-data-table__tr v-data-table__tr--clickable"
         })
       },
-      async miseAJoursEcran(){
+      async miseAJoursEcran(): Promise<void>{
         //Si une seul ligne est selectionné
         this.ligneSelectionnee.length===1?await this.remplirChamps(this.tableauSousTitre.find(x=>x.ligne_id_interne==this.ligneSelectionnee[0])):await this.viderChamps()
         if(this.ligneSelectionnee.length>=1){
           this.mode="Modification"
           this.texteDuMode="Modifier"
-          if(this.personnages[0]!='Aucun'){
-            this.personnages=['Aucun'].concat(this.personnages)
+          if(this.personnages[0].personnage_nom!="Aucun"){
+            this.personnages = [{ personnage_id: undefined, personnage_nom: "Aucun" }, ...this.personnages];
           }
-          if(this.couleurs[0]!=''){
-            this.couleurs=[''].concat(this.couleurs)
+          if(this.couleurs[0].nom!=''){
+            this.couleurs = [{nom:'',code:''},...this.couleurs]
           }
         }
         else{
           this.mode="Creation" 
           this.texteDuMode="Créer"
-          if(this.personnages[0]=='Aucun'){
-            this.personnages.splice(this.personnages[0],1)
+          if(this.personnages[0].personnage_nom=='Aucun'){
+            this.personnages.splice(0,1)
           }
-          if(this.couleurs[0]==''){
-            this.couleurs.splice(this.couleurs[0],1)
+          if(this.couleurs[0].nom==''){
+            this.couleurs.splice(0,1)
           }
         }
         this.surlignageLignes()
         this.deSurlignageLignes()
       },
-      surlignageLignes(){
-        const trs = Array.from(document.querySelectorAll(".v-data-table__tr--clickable")).filter((l)=>this.ligneSelectionnee.includes(parseInt(l.children[1].textContent)))
-        trs.forEach(tr=>{
+      surlignageLignes(): void{
+        const trsS: Element[] = Array.from(document.querySelectorAll(".v-data-table__tr--clickable")).filter((l) => {
+          const child: Element = l.children?.[1];
+          return this.ligneSelectionnee.includes(parseInt(child?.textContent ?? ''));
+        });
+        trsS.forEach(tr=>{
           tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
         })
       },
-      numeroterLigne(){
-        let i=1
+      numeroterLigne(): void{
+        let i: number = 1;
         document.querySelectorAll(".lignesNumero").forEach(row=>{
-            row.textContent=i
+            row.textContent=i.toString()
             i++
         })
       },
-      async initialisationProps(){
-        document.getElementById('video').src='fichier://'+this.cheminDeLaVideo;
+      async initialisationProps(): Promise<void>{
+        (document.getElementById('video') as HTMLVideoElement).src='fichier://'+this.cheminDeLaVideo;
+        // @ts-ignore (define in dts)
         if(!await window.electron.ipcRenderer.invoke('electron:dbActive')){
-          await window.electron.ipcRenderer.send('electron:initialiserDatabase', this.cheminDeLaDatabase)//voir pour attendre la reponse de la BDD
-          await window.electron.ipcRenderer.send('electron:dbSwitchOn')
+          // @ts-ignore (define in dts)
+          window.electron.ipcRenderer.send('electron:initialiserDatabase', this.cheminDeLaDatabase)//voir pour attendre la reponse de la BDD
+          // @ts-ignore (define in dts)
+          window.electron.ipcRenderer.send('electron:dbSwitchOn')
           setTimeout(async()=>{await this.initialiserDonne()},500)//et supprimer ce timeOut
         }else{
           await this.initialiserDonne()
         }
       },
-      async initialiserDonne(){
-        this.langues = [''].concat(await window.electron.ipcRenderer.invoke('electron:chargerLangue'))
-        //this.versions = await window.electron.ipcRenderer.invoke('electron:chargerVersion')
-        this.personnages = [''].concat(await window.electron.ipcRenderer.invoke('electron:chargerPersonnage'))
+      async initialiserDonne(): Promise<void>{
+        // @ts-ignore (define in dts)
+        this.langues = [{langue_id:undefined,langue_nom:''},...await window.electron.ipcRenderer.invoke('electron:chargerLangue')]
+        // @ts-ignore (define in dts)
+        this.personnages = [{personnage_id:undefined,personnage_nom:''},...(await window.electron.ipcRenderer.invoke('electron:chargerPersonnage'))]
+        // @ts-ignore (define in dts)
         let tab = await window.electron.ipcRenderer.invoke('electron:chargerLigne')
         tab.sort((a, b) => {
 
@@ -631,13 +648,16 @@ export default {
         this.itemParPage=this.tableauSousTitre.length
         this.couleurSelectionne=this.couleurs[0].code
         this.viderChamps()
+        // @ts-ignore (define in dts)
         this.languesVisible= await window.electron.ipcRenderer.invoke('electron:chargerLangue')
+        // @ts-ignore (define in dts)
         this.versionsVisible= await window.electron.ipcRenderer.invoke('electron:chargerVersion')
+        // @ts-ignore (define in dts)
         this.personnagesVisible= await window.electron.ipcRenderer.invoke('electron:chargerPersonnage')
       },
-      async verifierDoublon(){
+      verifierDoublon(): void{
 
-        if(this.ligneSelectionnee.length==1 && await this.tableauSousTitre.find(l=>{ return l.ligne_id_interne==this.ligneSelectionnee}).ligne_id == this.idSelectionne){
+        if(this.ligneSelectionnee.length==1 && this.tableauSousTitre.find(l=>{ return this.ligneSelectionnee.includes(l.ligne_id_interne)})?.ligne_id == this.idSelectionne){
           this.doublon=false
         }
         else{
@@ -650,130 +670,130 @@ export default {
         }
 
       },
-      async dupliquerLigne(){
-        // this.ligneSelectionnee.forEach(async l=>{
-        //   setTimeout(async ()=>{await window.electron.ipcRenderer.send('electron:dupliquerLigne',l)},1000)
-        //   this.traiterLignesAvecDelai(l)
-        // })
+      async dupliquerLigne(): Promise<void>{
         for(let  l of this.ligneSelectionnee){
           await new Promise(resolve => setTimeout(resolve, 10));
-          await window.electron.ipcRenderer.send('electron:dupliquerLigne', l);
+          // @ts-ignore (define in dts)
+          window.electron.ipcRenderer.send('electron:dupliquerLigne', l);
         }
         this.ligneSelectionnee=[]
         await this.miseAJoursEcran()
         await this.actualiserTableau()
-      },
-      async test(){
-
       }
     },  
       async mounted(){
       //Sert a enlever l'outil de pagination du v-data-table
-      document.querySelector(".v-data-table-footer").innerHTML=""
+      (document.querySelector(".v-data-table-footer")as HTMLElement).innerHTML=""
+
+      let ths=document.querySelectorAll('th')
+      ths.forEach(th=>{
+        th.setAttribute('style','background-color:#2F3241')
+      })
       //Force toute les donnée a s'afficher dans le tableau
       await this.initialisationProps()
     },
     watch:{
-      langueSelectionne(){
+      langueSelectionne(): void{
           this.changerVersion()
       },
-      mode(){
+      mode(): void{
           this.activationBouton()
       },
-      ligneSelectionnee(){
+      ligneSelectionnee(): void{
           this.cliqueCheckBox()
       },
-      idSelectionne(){
+      idSelectionne(): void{
         this.verifierDoublon()
       },
-      versionSelectionne(){
+      versionSelectionne(): void{
         this.verifierDoublon()
       },
-      personnageSelectionne(){
-
-      },
-      timecodeDebutSelectionne(){
+      timecodeDebutSelectionne(): void{
         if(this.creationModificationNOk=this.ligneSelectionnee.length<1){          
-          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
-          if (regex.test(this.timecodeDebutSelectionne)) {
-            if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
-              let timeCodeDebut= this.timecodeDebutSelectionne.split(',')
-              let timecodeDetail= timeCodeDebut[0].split(':')
-              let heures=parseInt(timecodeDetail[0])
-              let minutes=parseInt(timecodeDetail[1])
-              let secondes=parseInt(timecodeDetail[2])
-              let miliseconde=parseInt(timeCodeDebut[1])
+          if(this.timecodeDebutSelectionne){
+            if (this.timeCodeRegEx.test(this.timecodeDebutSelectionne)) {
+              if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
+                let timeCodeDebut: string[]|undefined = this.timecodeDebutSelectionne?.split(',')
+                let timecodeDetail: string[]|undefined = timeCodeDebut[0].split(':')
+                let heures: string|number = parseInt(timecodeDetail[0])
+                let minutes: string|number = parseInt(timecodeDetail[1])
+                let secondes: string|number = parseInt(timecodeDetail[2])
+                let miliseconde: string|number = parseInt(timeCodeDebut[1])
 
-              miliseconde++
-              if(miliseconde==1000){
-                miliseconde="000"
-                secondes++
-              }else{
-                miliseconde=miliseconde>=100?miliseconde.toString():miliseconde>=10?"0"+miliseconde:"00"+miliseconde
+                miliseconde++
+                if(miliseconde==1000){
+                  miliseconde="000"
+                  secondes++
+                }else{
+                  miliseconde=miliseconde>=100?miliseconde.toString():miliseconde>=10?"0"+miliseconde:"00"+miliseconde
+                }
+                if(secondes>=60){
+                  secondes="00"
+                  minutes++
+                }else{
+                  secondes=secondes>=10?secondes.toString():"0"+secondes
+                }
+                if(minutes>=60){
+                  minutes="00"
+                  heures++
+                }else{
+                  minutes=minutes>=10?minutes.toString():"0"+minutes
+                }
+                heures=heures>=10?heures.toString():"0"+heures
+                this.timecodeFinSelectionne=heures+":"+minutes+":"+secondes+","+miliseconde 
               }
-              if(secondes>=60){
-                secondes="00"
-                minutes++
-              }else{
-                secondes=secondes>=10?secondes.toString():"0"+secondes
-              }
-              if(minutes>=60){
-                minutes="00"
-                heures++
-              }else{
-                minutes=minutes>=10?minutes.toString():"0"+minutes
-              }
-              heures=heures>=10?heures.toString():"0"+heures
-              this.timecodeFinSelectionne=heures+":"+minutes+":"+secondes+","+miliseconde 
+              this.creationModificationNOk=false
             }
-            this.creationModificationNOk=false
           } else {
             this.creationModificationNOk=true
           }
         }else{
-          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
-          this.creationModificationNOk=!(regex.test(this.timecodeDebutSelectionne)||this.timecodeDebutSelectionne=='')
+          if(this.timecodeDebutSelectionne){
+            this.creationModificationNOk=!(this.timeCodeRegEx.test(this.timecodeDebutSelectionne)||this.timecodeDebutSelectionne=='')
+          }
         }
       },
-      timecodeFinSelectionne(){
-        if(this.creationModificationNOk=this.ligneSelectionnee.length<1){     
-          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
-          if (regex.test(this.timecodeFinSelectionne)) {
-            if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
-            let timeCodeFin= this.timecodeFinSelectionne.split(',')
-            let timecodeDetail= timeCodeFin[0].split(':')
-            let heures=parseInt(timecodeDetail[0])
-            let minutes=parseInt(timecodeDetail[1])
-            let secondes=parseInt(timecodeDetail[2])
-            let miliseconde=parseInt(timeCodeFin[1])
+      timecodeFinSelectionne(): void{
 
-            miliseconde--
-            if(miliseconde<=0 && (heures>0 || minutes>0 || secondes>0)){
-              miliseconde="999"
-              secondes--
-            }else if(miliseconde<=0 && (heures<=0 && minutes<=0 && secondes<=0)){
-              miliseconde="000"
-            }else{
-              miliseconde=miliseconde>=100?miliseconde.toString():miliseconde>=10?"0"+miliseconde:"00"+miliseconde
+        if(this.creationModificationNOk=this.ligneSelectionnee.length<1){     
+          if(this.timecodeFinSelectionne){
+            if (this.timeCodeRegEx.test(this.timecodeFinSelectionne)) {
+              if(this.timeCodeFormatage(this.timecodeDebutSelectionne)>= this.timeCodeFormatage(this.timecodeFinSelectionne)){
+              let timeCodeFin: string[]|undefined = this.timecodeFinSelectionne.split(',')
+              let timecodeDetail: string[]|undefined = timeCodeFin[0].split(':')
+              let heures: string|number = parseInt(timecodeDetail[0])
+              let minutes: string|number = parseInt(timecodeDetail[1])
+              let secondes: string|number = parseInt(timecodeDetail[2])
+              let miliseconde: string|number = parseInt(timeCodeFin[1])
+
+              miliseconde--
+              if(miliseconde<=0 && (heures>0 || minutes>0 || secondes>0)){
+                miliseconde="999"
+                secondes--
+              }else if(miliseconde<=0 && (heures<=0 && minutes<=0 && secondes<=0)){
+                miliseconde="000"
+              }else{
+                miliseconde=miliseconde>=100?miliseconde.toString():miliseconde>=10?"0"+miliseconde:"00"+miliseconde
+              }
+              if(secondes<=0 && (heures>0 || minutes>0)){
+                secondes="59"
+                minutes--
+              }else if(secondes==0 && (heures<=0 && minutes<=0)){
+                secondes="00"
+              }else{
+                secondes=secondes>=10?secondes.toString():"0"+secondes
+              }
+              if(minutes<=0 && heures>0){
+                minutes="59"
+                heures--
+              }else if(minutes<=0 && heures<=0){
+                minutes="00"
+                heures="00"
+              }else{
+                minutes=minutes>=10?minutes.toString():"0"+minutes
+              }
+              this.timecodeDebutSelectionne=heures+":"+minutes+":"+secondes+","+miliseconde 
             }
-            if(secondes<=0 && (heures>0 || minutes>0)){
-              secondes="59"
-              minutes--
-            }else if(secondes==0 && (heures<=0 && minutes<=0)){
-              secondes="00"
-            }else{
-              secondes=secondes>=10?secondes.toString():"0"+secondes
-            }
-            if(minutes<=0 && heures>0){
-              minutes="59"
-              heures--
-            }else if(minutes<=0 && heures<=0){
-              minutes="00"
-              heures="00"
-            }else{
-              minutes=minutes>=10?minutes.toString():"0"+minutes
-            }
-            this.timecodeDebutSelectionne=heures+":"+minutes+":"+secondes+","+miliseconde 
           }
           if(this.timecodeFinSelectionne=="00:00:00,000"){
             this.timecodeDebutSelectionne="00:00:00,000"
@@ -790,37 +810,37 @@ export default {
             }
           }
         }else{
-          const regex = /^[0-9][0-9]:[0-5][0-9]:[0-5][0-9],[0-9]{3}$/;
-          this.creationModificationNOk=!(regex.test(this.timecodeFinSelectionne)||this.timecodeFinSelectionne=='')
+          if(this.timecodeFinSelectionne){
+            this.creationModificationNOk=!(this.timeCodeRegEx.test(this.timecodeFinSelectionne)||this.timecodeFinSelectionne=='')
+          }
         }
       },
-      languesVisibleSelectionne(){
+      languesVisibleSelectionne(): void{
         this.actualiserTableau()
       },
-      versionsVisibleSelectionne(){
+      versionsVisibleSelectionne(): void{
         this.actualiserTableau()
       },
-      personnagesVisibleSelectionne(){
+      personnagesVisibleSelectionne(): void{
         this.actualiserTableau()
       }
     },
     created() {
-      const propVideo = this.$route.query.propVideo;
-      const propDatabase = this.$route.query.propDatabase;
+      const propVideo: LocationQueryValue|LocationQueryValue[] = this.$route.query.propVideo;
+      const propDatabase: LocationQueryValue|LocationQueryValue[] = this.$route.query.propDatabase;
       
-
       if (typeof propVideo === 'string') {
         this.cheminDeLaVideo = propVideo;
       } else {
         console.error('PropVideo est undefined.');
+        this.messageInformatif='PropVideo est undefined.'
       }
       if (typeof propDatabase === 'string') {
         this.cheminDeLaDatabase = propDatabase;
       } else {
         console.error('PropDatabase est undefined.');
+        this.messageInformatif='PropDatabase est undefined.'
       }
-    },
-    computed: {
     },
 }
 </script>
@@ -829,9 +849,15 @@ export default {
     #selectionAffichage{
       display: flex;
       .selectionAffichage{
-        margin: 5px;
+        margin: 0 5px 5px 5px;
         width: 30%;
       }
+    }
+    #bandeRythmo{
+      margin: 0;
+      overflow: auto;
+      border: 1px outset #86a5b1;
+      height: 7em;  
     }
     .bg{
         background-color: red !important;
@@ -869,13 +895,13 @@ export default {
             height: 100%;
             #video{
                 width: 800px;
-                height: 450px;
+                height: 400px;
             }        
         }
 
         .videoGestionSousTitre:nth-child(2){
             width: 100%;
-            border: 1px double #86a5b1;
+            border: 1px outset #86a5b1;
             display: grid;
             grid-template-columns: repeat(7,1fr); /* 8 colonnes égales */
             gap: 10px; /* Espacement entre les éléments */
@@ -887,7 +913,7 @@ export default {
                 "zone13 zone13 zone13 zone13 zone13 zone13  zone13 zone13"
                 "zone13 zone13 zone13 zone13 zone13 zone13  zone13 zone13"
                 "zone14 zone14 zone15 zone15 . . . zone16"
-                "zone17 zone17 . . . . . ."
+                "zone17 zone17 zone17 zone17 zone17 zone17 zone17 zone17"
                 ;
                 .gridArea:nth-child(1){grid-area: zone1;}
                 .gridArea:nth-child(2){grid-area: zone2;}

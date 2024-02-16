@@ -1,15 +1,15 @@
 export default class Lignes {
     private id:number|undefined
-    private versionId:number
+    private versionId:number|undefined
     private personnageId:number|undefined
-    private timeCodeDebut:string
-    private timeCodeFin:string
-    private zIndex:number
-    private texte:string
-    private couleur:string
-    private couleurHexa:string
+    private timeCodeDebut:string|undefined
+    private timeCodeFin:string|undefined
+    private zIndex:number|undefined
+    private texte:string|undefined
+    private couleur:string|undefined
+    private couleurHexa:string|undefined
     
-    constructor(_id:number|undefined, _versionId:number, _timeCodeDebut:string, _timeCodeFin:string, _zIndex:number, _texte:string,_personnageId:number|undefined,_couleur:string,_couleurHexa:string){
+    constructor(_id:number|undefined, _versionId:number|undefined, _timeCodeDebut:string|undefined, _timeCodeFin:string|undefined, _zIndex:number|undefined, _texte:string|undefined,_personnageId:number|undefined,_couleur:string|undefined,_couleurHexa:string|undefined){
         this.id =_id
         this.versionId = _versionId
         this.timeCodeDebut = _timeCodeDebut
@@ -20,61 +20,60 @@ export default class Lignes {
         this.couleur = _couleur
         this.couleurHexa = _couleurHexa
     }
-    recupererId(){
+    recupererId():number|undefined{
         return this.id
     }
-    enregistrerId(_id:number){
+    enregistrerId(_id:number|undefined):void{
         this.id = _id
     }
-    recupererVersionId(){
+    recupererVersionId():number|undefined{
         return this.versionId
     }
-    enregistrerVersionId(_versionId:number){
+    enregistrerVersionId(_versionId:number):void{
         this.versionId = _versionId
     }
-    recupererPersonnageId(){
+    recupererPersonnageId():number|undefined{
         return this.personnageId
     }
-    enregistrerPersonnageId(_personnageId:number){
+    enregistrerPersonnageId(_personnageId:number):void{
         this.personnageId = _personnageId
     }
-    recupererTimeCodedebut(){
+    recupererTimeCodedebut():string|undefined{
         return this.timeCodeDebut
     }
-    enregistrerTimeCodeDebut(_timeCodeDebut:string){
+    enregistrerTimeCodeDebut(_timeCodeDebut:string):void{
         this.timeCodeDebut = _timeCodeDebut
     }
-    recupererTimeCodeFin(){
+    recupererTimeCodeFin():string|undefined{
         return this.timeCodeFin
     }
-    enregistrerTimeCodeFin(_timeCodeFin:string){
+    enregistrerTimeCodeFin(_timeCodeFin:string):void{
         this.timeCodeFin = _timeCodeFin
     }
-    recupererZIndex(){
+    recupererZIndex():number|undefined{
         return this.zIndex
     }
-    enregistrerZIndex(_zIndex:number){
+    enregistrerZIndex(_zIndex:number):undefined{
         this.zIndex = _zIndex
     }
-    recupererTexte(){
+    recupererTexte():string|undefined{
         return this.texte
     }
-    enregistrerTexte(_texte:string){
+    enregistrerTexte(_texte:string):undefined{
         this.texte = _texte
     }
-    recupererCouleur(){
+    recupererCouleur():string|undefined{
         return this.couleur
     }
-    enregistrerCouleur(_couleur:string){
+    enregistrerCouleur(_couleur:string):void{
         if(_couleur==undefined)
         this.couleur = _couleur
     }
-    recupererCouleurHexa(){
+    recupererCouleurHexa():string|undefined{
         return this.couleurHexa
     }
-    enregistrerCouleurHexa(_couleurHexa:string){
+    enregistrerCouleurHexa(_couleurHexa:string):void{
         if(_couleurHexa==undefined)
         this.couleur = _couleurHexa
     }
-
 }

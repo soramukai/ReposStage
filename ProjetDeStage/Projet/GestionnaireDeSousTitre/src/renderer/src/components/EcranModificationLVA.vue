@@ -67,7 +67,7 @@
             <div class="boutonInteractionBaseDeDonnee">
                 <v-btn 
                     @click="creationLVA"
-                    :disabled="(texteCreation.length==0 || ElementFacultatifAffichageActif) && (texteCreation.length==0 || ElementFacultatifSelectionne=='')"           
+                    :disabled="(texteCreation.length==0 || ElementFacultatifAffichageActif) && (texteCreation.length==0 || ElementFacultatifSelectionne==undefined) || doublon"           
                     variant="tonal"     
                     class="bouton">Créer
                 </v-btn>
@@ -100,7 +100,7 @@
                     -->
                     <v-btn 
                         variant="tonal"
-                        :disabled="(!ElementPrincipalSelectionne || texteCreation.length==0) && !modificationOK"
+                        :disabled="(!ElementPrincipalSelectionne || texteCreation.length==0) && !modificationOK || doublon"
                         class="bouton"
                         @click="modificationLVA">
                             Modifier
@@ -147,10 +147,12 @@ export default {
             ipcCreer:"electron:creer",
             ipcModifier:"electron:modifier",
             ipcSupprimer:"electron:supprimer",
+            messageSuppression:"",
 
             video:"",
             database:"",
             autre:"",
+            doublon:false,
         }
     },
     methods:{
@@ -161,6 +163,7 @@ export default {
                 case "Langue":
                     this.TitreElementPrincipal="langue_nom"
                     this.ValeurElementPrincipal="langue_id"
+                    this.messageSuppression="Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!\n(Supprimer une Langue entrainera une supression en cascade qui detruira toute Version et Ligne ayant une reference vers elle)"
                     break
                 case "Version":
                     this.LabelElementFacultatif ="Langue"
@@ -172,10 +175,12 @@ export default {
                     this.modificationOK=false
                     this.ElementFacultatifListe = await this.chargementLVA("Langue")
                     this.autre="langue_id"
+                    this.messageSuppression="Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!\n(Supprimer une Version entrainera une supression en cascade qui detruira toute Ligne ayant une reference vers elle)"
                     break
                 case "Personnage":
                     this.TitreElementPrincipal="personnage_nom"
                     this.ValeurElementPrincipal="personnage_id"
+                    this.messageSuppression="Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!\n(Supprimer un Personnage entrainera le dereferencement de toutes lignes ayant une reference vers lui)"
                     break
                 default:
                     console.error("Page non Chargé")
@@ -192,22 +197,36 @@ export default {
         },
         // Fonction qui permet de faire une requette de creation à la base de donnée via une commande IPC
         async creationLVA(){
-            await window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage,await this.creationJsonVersion())
+            // @ts-ignore (define in dts)
+            window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage,await this.creationJsonVersion())
             location.reload();
         },
         // Fonction qui permet de faire une requette de chargement à la base de donnée via une commande IPC
         async chargementLVA(_nomDeLEntitee){
+            // @ts-ignore (define in dts)
             return await window.electron.ipcRenderer.invoke('electron:charger'+_nomDeLEntitee)
         },
         // Fonction qui permet de faire une requette de modification à la base de donnée via une commande IPC
-        async modificationLVA(){     
-            await window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJsonVersion())
+        async modificationLVA(): Promise<void>{     
+            // @ts-ignore (define in dts)
+            window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJsonVersion())
             location.reload();
         },
         // Fonction qui permet de faire une requette de suppression à la base de donnée via une commande IPC
         async suppressionLVA(){
-            await window.electron.ipcRenderer.send('electron:supprimer'+this.NomDeLaPage,this.ElementPrincipalSelectionne)
+            if (confirm(this.messageSuppression)){
+                // @ts-ignore (define in dts)
+                await window.electron.ipcRenderer.send('electron:supprimer'+this.NomDeLaPage,this.ElementPrincipalSelectionne)
+            }
             location.reload();
+        },
+        verifierDoublon(){
+            this.doublon=false
+            this.ElementPrincipalListe.forEach(ep=>{
+                if(ep[this.TitreElementPrincipal]==this.texteCreation){
+                    this.doublon=true;
+                }
+            })
         },
         transitVideo(){
             this.$router.push({
@@ -238,6 +257,7 @@ export default {
         },
         // Detection de changement de valeur de la selection de la liste des elements facultatifs
         async ElementFacultatifSelectionne(){
+            console.log(this.texteCreation.length==0 && this.ElementFacultatifSelectionne==0)
             //Permet de conditionner la possibilité d'appuyer sur le bouton modifier
             if(this.ElementFacultatifAffichageActif)
             {
@@ -266,6 +286,10 @@ export default {
             else{
                 this.modificationOK=false
             }
+        },
+        texteCreation(){
+            this.verifierDoublon()
+            console.log(this.doublon)
         }
     },
     created() {

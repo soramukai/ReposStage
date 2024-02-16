@@ -10,7 +10,13 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "experimentalDecorators":true,
+    "strictPropertyInitialization": false,
     "baseUrl": ".",
+    "target": "es5",
+    "module": "commonjs",
+    "types": ["electron"],
+    "esModuleInterop": true,
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*"
