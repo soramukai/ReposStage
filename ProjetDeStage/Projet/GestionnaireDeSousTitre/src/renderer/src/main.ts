@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import routes from './routes'
-import { createRouter, createWebHistory } from 'vue-router'
+import routes from './class/routes'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 // Vuetify
 import 'vuetify/styles'
@@ -15,7 +15,7 @@ const vuetify = createVuetify({
 })
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 })
 

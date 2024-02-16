@@ -1,10 +1,9 @@
 import { app, BrowserWindow  } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png'
 import IpcDb from './IPC/IpcDb';
 import ipcFfmpeg from './IPC/ipcFfmpeg';
 import ipcRepertoire from './IPC/ipcRepertoire'
-import  dbConnection  from './Class/dbConnection';
+import dbConnection  from './Class/dbConnection';
 import protocolFichierLocal from './protocol/protocolFichierLocal';
 import * as path from'path'
 
@@ -18,7 +17,6 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: false,

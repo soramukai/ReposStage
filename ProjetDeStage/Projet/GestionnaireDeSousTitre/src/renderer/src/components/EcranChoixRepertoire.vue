@@ -56,13 +56,13 @@
         <v-file-input 
           class="video"
           :disabled="cheminDuRepertoire==''|| ProgressionConverstion!=''"
-          :v-model="videoAimporter"
+          v-model="videoAimporter"
           :accept="extensionsVideoAcceptees">
         </v-file-input>
         <v-btn 
           variant="tonal" 
           class="video"
-          :disabled="videoAimporter==''|| ProgressionConverstion!=''"
+          :disabled="videoAimporter.length==0|| ProgressionConverstion!=''"
           @click="()=>copierUnElement(videoAimporter)">
             Convertir
         </v-btn>
@@ -73,7 +73,7 @@
           @click="()=>{supprimerUnElement(repertoireDeTravail.recupererUrlVideo());fichierVideoSelectionnee=''}">
             Supprimer
         </v-btn>
-        <!-- <div 
+        <div 
           v-if="ProgressionConverstion !== ''" 
           class="progress-container">
             <v-list-subheader>
@@ -88,22 +88,22 @@
               class="progress-label">
                 {{ ProgressionConverstion }}%
             </span>
-        </div> -->
+        </div>
       </div>
        
       <div class="fichier">
         <img
           v-if="cheminDuRepertoire!=''"
           id="rafraichir" 
-          src="../img/rafraichir.png" 
+          src="../assets/rafraichir.png" 
           alt="" 
           tabindex="0"
-          v-on:keydown.space.prevent="actualiserImageRafraichir('presse')"
-          v-on:keyup.space="actualiserImageRafraichir('pressePas')"
-          :onmouseover="()=>actualiserImageRafraichir('hover')" 
-          :onmouseout="()=>actualiserImageRafraichir('normal')"
-          :onmouseup="()=>actualiserImageRafraichir('cliquePas')"
-          :onmousedown="()=>actualiserImageRafraichir('clique')">
+          @keydown.space.prevent="(event) => actualiserImageRafraichir('presse',event)"
+          @keyup.space="(event) => actualiserImageRafraichir('pressePas',event)"
+          @mouseover="(event) => actualiserImageRafraichir('hover',event)" 
+          @mouseout="(event) => actualiserImageRafraichir('normal',event)"
+          @mouseup="(event) => actualiserImageRafraichir('cliquePas',event)"
+          @mousedown="(event) => actualiserImageRafraichir('clique',event)">
       </div>
 
       <!-- Section de selection de Base de données -->
@@ -123,13 +123,13 @@
           <v-file-input 
             class="BDD"
             :disabled="cheminDuRepertoire==''"
-            :v-model="databaseAImporter"
+            v-model="databaseAImporter"
             :accept="extensionsDatabaseAcceptees">
           </v-file-input>
           <v-btn 
             variant="tonal" 
             class="BDD"
-            :disabled="databaseAImporter==''"
+            :disabled="databaseAImporter.length==0"
             @click="()=>copierUnElement(databaseAImporter)">
               Copier
           </v-btn>
@@ -159,29 +159,31 @@ import Repertoire from '../class/Repertoire';
 export default {
   data() {
     return {
-      ProgressionConverstion:'',
+      ProgressionConverstion:'' as string,
       // Liste des extenssion accepté pour les videos et databases
-      extensionsVideoAcceptees:['.mp4', '.mkv', '.avi', '.wmv', '.flv', '.mpeg'],
-      extensionsDatabaseAcceptees:['.db', '.sqlite', '.sqlite3'],
+      extensionsVideoAcceptees:['.mp4', '.mkv', '.avi', '.wmv', '.flv', '.mpeg'] as string[],
+      extensionsDatabaseAcceptees:['.db', '.sqlite', '.sqlite3'] as string[],
       // Instance de la class Repertoir
-      repertoireDeTravail:Repertoire.recupererInstanceDuRepertoire(),
-      cheminDuRepertoire: "",
+      repertoireDeTravail:Repertoire.recupererInstanceDuRepertoire() as Repertoire,
+      cheminDuRepertoire: "" as string,
       // fichier a importer
-      videoAimporter:"",
-      databaseAImporter:"",
+      videoAimporter:[] as File[],
+      databaseAImporter:[] as File[],
       // Liste avec le contenue du dossier 
-      recapitulatif:[],
-      fichiersVideo: [],
-      fichiersDatabase: [],
-      fichierVideoSelectionnee: "",
-      fichierDatabaseSelectionnee: "",
+      recapitulatif:[] as Object[],
+      fichiersVideo: [] as string[],
+      fichiersDatabase: [] as string[],
+      fichierVideoSelectionnee: '' as string | undefined,
+      fichierDatabaseSelectionnee: '' as string|undefined,
     };
   },
   methods: {
     async selectionnerDossier() {
       this.cheminDuRepertoire="En Selection"
+      // @ts-ignore (define in dts)
       window.electron.ipcRenderer.send('electron:selectionDossier');
-      window.electron.ipcRenderer.on('electron:renvoyerUrlDossier', async (event, folderPath) => {
+      // @ts-ignore (define in dts)
+      window.electron.ipcRenderer.on('electron:renvoyerUrlDossier', async (_,folderPath) => {
         this.fichierDatabaseSelectionnee=""
         this.fichierVideoSelectionnee=""
         this.repertoireDeTravail.modifierUrlRepertoire(folderPath!=""?folderPath:"")
@@ -190,9 +192,10 @@ export default {
     },
     chargerRepertoire(){
       if(this.cheminDuRepertoire!="En Selection" && this.cheminDuRepertoire!=""){
+        // @ts-ignore (define in dts)
         window.electron.ipcRenderer.send('electron:recapitulatifRepertoire',this.cheminDuRepertoire)
-
-        window.electron.ipcRenderer.on('electron:contenueDossier', async (event,_dossiers,_fichiers)=>{
+        // @ts-ignore (define in dts)
+        window.electron.ipcRenderer.on('electron:contenueDossier', async (_,_dossiers,_fichiers)=>{
 
           this.repertoireDeTravail.modifierFichiers(_fichiers)
           const contenueReacp = _dossiers
@@ -224,11 +227,13 @@ export default {
     },*/
     async copierUnElement(_elementACopier){
       const nomElementACopier= _elementACopier[0].name
-      await window.electron.ipcRenderer.send('electron:copierElement',_elementACopier[0].path,this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+nomElementACopier)
+      // @ts-ignore (define in dts)
+      window.electron.ipcRenderer.send('electron:copierElement',_elementACopier[0].path,this.repertoireDeTravail.recupererUrlRepertoire()+"\\"+nomElementACopier)
     },
     async supprimerUnElement(_fichierASupprimer){
       if (confirm("Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!")){
-        await window.electron.ipcRenderer.send('electron:supprimerElement',_fichierASupprimer)
+        // @ts-ignore (define in dts)
+        window.electron.ipcRenderer.send('electron:supprimerElement',_fichierASupprimer)
         this.chargerRepertoire()
       }
     },
@@ -241,54 +246,57 @@ export default {
 
       return fichers;
     },
-    actualiserImageRafraichir(_etat) {
-      let img = document.getElementById('rafraichir');  
-      if(this.cheminDuRepertoire!=''){
+    actualiserImageRafraichir(_etat: string, event: MouseEvent|KeyboardEvent) {
+      let img: HTMLElement|null = document.getElementById('rafraichir');  
+      if(this.cheminDuRepertoire!='' && img){
         switch(_etat){
             case 'presse':
-              img.src = './src/img/rafraichirClique.png'
+              (img as HTMLImageElement).src = './src/assets/rafraichirClique.png'
               break
             case 'pressePas':
-              img.src = '../src/img/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
+             (img as HTMLImageElement).src = '../src/assets/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
               this.chargerRepertoire()
               break
             case 'clique':
-              img.src = './src/img/rafraichirClique.png'
+             (img as HTMLImageElement).src = './src/assets/rafraichirClique.png'
               break
             case 'cliquePas':
-              if(this.survoleImageRafraichir(img)){
-                img.src = './src/img/rafraichirHover.png'; // Changez l'image lors du survol
+              if (this.survoleImageRafraichir(img,event)){
+               (img as HTMLImageElement).src = './src/assets/rafraichirHover.png'; // Changez l'image lors du survol
                 this.chargerRepertoire()
               }else{
-                img.src = '../src/img/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
+               (img as HTMLImageElement).src = '../src/assets/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
               }
               break
             case 'normal':
-              img.src = '../src/img/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
+             (img as HTMLImageElement).src = '../src/assets/rafraichir.png'; // Revenez à l'image normale lorsque la souris quitte
               break
             case 'hover':
-              img.src = './src/img/rafraichirHover.png'; // Changez l'image lors du survol
+             (img as HTMLImageElement).src = './src/assets/rafraichirHover.png'; // Changez l'image lors du survol
               break
           }
         }else{
-          img.src = './src/img/rafraichirDesactive.png'
+         (img as HTMLImageElement).src = './src/assets/rafraichirDesactive.png'
         }
     },
-    survoleImageRafraichir(element) {
-    let bounding = element.getBoundingClientRect();
-    return bounding.top <= event.clientY && event.clientY <= bounding.bottom
-        && bounding.left <= event.clientX && event.clientX <= bounding.right;
+    survoleImageRafraichir(element, event) {
+      if (!event) return false; // Vérifie si l'événement est défini
+      let bounding = element.getBoundingClientRect();
+      return bounding.top <= (event.clientY || 0) && (event.clientY || 0) <= bounding.bottom
+          && bounding.left <= (event.clientX || 0) && (event.clientX || 0) <= bounding.right;
     },
     actualiserContenue(){
       this.chargerRepertoire()
     }
   },
   async mounted(){
-    await window.electron.ipcRenderer.send('electron:dbSwitchOff')
+    // @ts-ignore (define in dts)
+    window.electron.ipcRenderer.send('electron:dbSwitchOff')
     /*window.electron.ipcRenderer.on('electron:progressPercent', (event, progress) => {
       this.ProgressionConverstion = progress;
     });*/
-    window.electron.ipcRenderer.on('electron:copieSucces',(event)=>{
+    // @ts-ignore (define in dts)
+    window.electron.ipcRenderer.on('electron:copieSucces',(_)=>{
       this.chargerRepertoire()
     })
   },
@@ -303,21 +311,25 @@ export default {
       }
     },*/
     fichierVideoSelectionnee(){
+      console.log(this.videoAimporter)
       // Chemin du fichier
       this.repertoireDeTravail.modifierUrlVideo(this.cheminDuRepertoire + '\\' + this.fichierVideoSelectionnee);
 
       if(this.fichierVideoSelectionnee!=""){
-        let routage = document.getElementById('boutonCharger')
-        let vbouton= document.getElementById('v-boutonCharger')
-        let router = document.createElement("router-link")
+        let routage: HTMLElement|null = document.getElementById('boutonCharger')
+        let vbouton: HTMLElement|null = document.getElementById('v-boutonCharger')
+        let router: HTMLElement|null = document.createElement("router-link")
         
         router.className="route"
         router.addEventListener('click',this.ChargerFichier)
         router.setAttribute('to',"/gestion-sous-titre")
-        router.appendChild(vbouton);
-
-        routage.innerHTML="";
-        routage.appendChild(router)
+        if(vbouton){
+          router.appendChild(vbouton);
+        }
+        if(routage){
+          routage.innerHTML="";
+          routage.appendChild(router)
+        }
       }
       else{
         this.repertoireDeTravail.modifierUrlVideo("")

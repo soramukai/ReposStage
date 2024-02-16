@@ -33,3 +33,9 @@ export interface JsonCouleur{
     nom: string;
     code: string;
 }
+
+export interface JsonIPC{
+    id: number;
+    nom: string;
+    langue_id: number|undefined;
+}

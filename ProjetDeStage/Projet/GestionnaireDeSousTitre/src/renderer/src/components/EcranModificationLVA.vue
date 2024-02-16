@@ -14,8 +14,8 @@
                 <v-col>
                     <v-list
                         class="listeRecapitulative"
-                        :items="ElementPrincipalListe"
-                        :item-title="TitreElementPrincipal"
+                        :items=ElementPrincipalListe
+                        :item-title=TitreElementPrincipal
                         dense>
                     </v-list>
                 </v-col>
@@ -54,9 +54,9 @@
                         v-if="ElementFacultatifAffichageActif"
                         class="input"
                         v-model="ElementFacultatifSelectionne"
-                        :items="ElementFacultatifListe"
-                        :item-title="TitreElementFacultatif"
-                        :item-value="ValeurElementFacultatif">
+                        :items=ElementFacultatifListe
+                        :item-title=TitreElementFacultatif
+                        :item-value=ValeurElementFacultatif>
                     </v-select>
                 </div>
             </div>
@@ -83,9 +83,9 @@
                     <v-select 
                         class="input"
                         v-model="ElementPrincipalSelectionne"
-                        :items="ElementPrincipalListe"
-                        :item-title="TitreElementPrincipal"
-                        :item-value="ValeurElementPrincipal"
+                        :items=ElementPrincipalListe
+                        :item-title=TitreElementPrincipal
+                        :item-value=ValeurElementPrincipal
                     ></v-select>
                     <!-- Router permetant de revenir sur la page de gestion des sous-titres bindé sur le bouton "Retour" -->
                     <router-link class="route" @click="transitVideo" to="/gestion-sous-Titre">
@@ -120,45 +120,43 @@
 </template>
 
 <script lang="ts">
+import { LocationQueryValue } from 'vue-router'
+import { JsonIPC, JsonLangue, JsonPersonnage, JsonVersion } from '../Interface/Interface'
 export default {
     data(){
         // Variable de la page necessaire a la generation/gestion dynamique des elements
         return{
-            NomDeLaPage : "",
-            texteCreation:"",
+            NomDeLaPage : "" as string,
+            texteCreation: "" as string,
 
             //Variable en rapport à la liste d'element principale
-            ElementPrincipalListe : [],
-            ElementPrincipalSelectionne:""||undefined,
-            TitreElementPrincipal:"",
-            ValeurElementPrincipal:"",
+            ElementPrincipalListe : [] as JsonLangue[]|JsonPersonnage[]|JsonVersion[],
+            ElementPrincipalSelectionne:undefined as number|undefined,
+            TitreElementPrincipal:"" as string,
+            ValeurElementPrincipal: "" as string,
 
             //Variable en rapport à la liste d'element facultative
-            LabelElementFacultatif:"",
-            ElementFacultatifListe:[],
-            ElementFacultatifAffichageActif:false,
-            ElementFacultatifSelectionne:""||undefined,
-            TitreElementFacultatif:"",
-            ValeurElementFacultatif:"",
-            modificationOK:false,
-            
-            //Commande IPC
-            ipcCharger:"electron:charger",
-            ipcCreer:"electron:creer",
-            ipcModifier:"electron:modifier",
-            ipcSupprimer:"electron:supprimer",
-            messageSuppression:"",
+            LabelElementFacultatif: "" as string,
+            ElementFacultatifListe:[] as JsonLangue[],
+            ElementFacultatifAffichageActif:false as boolean,
+            ElementFacultatifSelectionne:undefined as number|undefined,
+            TitreElementFacultatif:"" as string,
+            ValeurElementFacultatif:"" as string,
+            modificationOK:false as boolean,
 
-            video:"",
-            database:"",
-            autre:"",
-            doublon:false,
+            //Variable props
+            video:"" as string,
+            database:"" as string,
+            autre:"" as string,
+
+            doublon:false as boolean,
+            messageSuppression:"" as string,
         }
     },
     methods:{
         // Fonction qui permet de configurer la page et de charger les donnée
         // !Voir pour optimiser! Ce switch case permet de configurer la page en fonction du props recu
-        async recuperationDonneesLVA(){
+        async recuperationDonneesLVA(): Promise<void>{
             switch(this.NomDeLaPage){
                 case "Langue":
                     this.TitreElementPrincipal="langue_nom"
@@ -173,7 +171,7 @@ export default {
                     this.ValeurElementFacultatif="langue_id"
                     this.ElementFacultatifAffichageActif=true
                     this.modificationOK=false
-                    this.ElementFacultatifListe = await this.chargementLVA("Langue")
+                    this.ElementFacultatifListe = await this.chargementLangue("Langue")
                     this.autre="langue_id"
                     this.messageSuppression="Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!\n(Supprimer une Version entrainera une supression en cascade qui detruira toute Ligne ayant une reference vers elle)"
                     break
@@ -185,42 +183,46 @@ export default {
                 default:
                     console.error("Page non Chargé")
             }
-            this.ElementPrincipalListe =await this.chargementLVA(this.NomDeLaPage)
+            this.ElementPrincipalListe = await this.chargementLVA(this.NomDeLaPage)
         },
         // Fonction qui permet de formater un JSON a envoyer dans une commande IPC afin d'effectuer une requette à la base de donnée
-        async creationJsonVersion(){
+        creationJsonVersion(): JsonIPC{
             return{
-                "id":-1,
-                "nom":this.texteCreation,
-                "langue_id":this.ElementFacultatifSelectionne
+                "id": -1,
+                "nom": this.texteCreation,
+                "langue_id": this.ElementFacultatifSelectionne
             }
         },
         // Fonction qui permet de faire une requette de creation à la base de donnée via une commande IPC
-        async creationLVA(){
+        creationLVA(): void{
             // @ts-ignore (define in dts)
-            window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage,await this.creationJsonVersion())
+            window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage, this.creationJsonVersion())
             location.reload();
         },
         // Fonction qui permet de faire une requette de chargement à la base de donnée via une commande IPC
-        async chargementLVA(_nomDeLEntitee){
+        async chargementLVA(_nomDeLEntitee): Promise<JsonLangue[]|JsonPersonnage[]|JsonVersion[]>{
+            // @ts-ignore (define in dts)
+            return await window.electron.ipcRenderer.invoke('electron:charger'+_nomDeLEntitee)
+        },
+        async chargementLangue(_nomDeLEntitee): Promise<JsonLangue[]>{
             // @ts-ignore (define in dts)
             return await window.electron.ipcRenderer.invoke('electron:charger'+_nomDeLEntitee)
         },
         // Fonction qui permet de faire une requette de modification à la base de donnée via une commande IPC
-        async modificationLVA(): Promise<void>{     
+        modificationLVA(): void{     
             // @ts-ignore (define in dts)
-            window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne,await this.creationJsonVersion())
+            window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne, this.creationJsonVersion())
             location.reload();
         },
         // Fonction qui permet de faire une requette de suppression à la base de donnée via une commande IPC
-        async suppressionLVA(){
+        suppressionLVA(): void{
             if (confirm(this.messageSuppression)){
                 // @ts-ignore (define in dts)
-                await window.electron.ipcRenderer.send('electron:supprimer'+this.NomDeLaPage,this.ElementPrincipalSelectionne)
+                window.electron.ipcRenderer.send('electron:supprimer'+this.NomDeLaPage,this.ElementPrincipalSelectionne)
             }
             location.reload();
         },
-        verifierDoublon(){
+        verifierDoublon(): void{
             this.doublon=false
             this.ElementPrincipalListe.forEach(ep=>{
                 if(ep[this.TitreElementPrincipal]==this.texteCreation){
@@ -228,7 +230,7 @@ export default {
                 }
             })
         },
-        transitVideo(){
+        transitVideo(): void{
             this.$router.push({
             path: '/gestion-sous-titre',
             query: {
@@ -240,43 +242,41 @@ export default {
     },
     watch:{
         // Detection de changement de valeur de la selection de la liste des elements principaux
-        async ElementPrincipalSelectionne(){
+        ElementPrincipalSelectionne(): void{
             //Permet de recuperer et pres-selectionner l'element facultatif en relation avec l'element principale selectionnée
-            if(this.ElementFacultatifAffichageActif && this.ElementPrincipalSelectionne!="")
+            if(this.ElementFacultatifAffichageActif && this.ElementPrincipalSelectionne)
             {
-                let entiteeNom = this.LabelElementFacultatif.toLowerCase()
-                const elementPrincipal = await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)
-                let elementFacultatif=""||undefined;
+                let entiteeNom: string = this.LabelElementFacultatif.toLowerCase()
+                const elementPrincipal: JsonLangue|JsonPersonnage|JsonVersion|undefined = this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)
+                let elementFacultatif: JsonLangue|undefined = undefined;
                 if(elementPrincipal!=undefined){
-                    elementFacultatif = await this.ElementFacultatifListe.find(ef=>ef[this.ValeurElementFacultatif]==elementPrincipal[entiteeNom][this.ValeurElementFacultatif])
-                }
-                if(elementFacultatif!=undefined){
-                    this.ElementFacultatifSelectionne=elementFacultatif[this.ValeurElementFacultatif]
+                    elementFacultatif = this.ElementFacultatifListe.find(ef=>ef[this.ValeurElementFacultatif]==elementPrincipal[entiteeNom][this.ValeurElementFacultatif])
+                    if(elementFacultatif){
+                        this.ElementFacultatifSelectionne=elementFacultatif[this.ValeurElementFacultatif]
+                    }
                 }
             }
         },
         // Detection de changement de valeur de la selection de la liste des elements facultatifs
-        async ElementFacultatifSelectionne(){
-            console.log(this.texteCreation.length==0 && this.ElementFacultatifSelectionne==0)
+        ElementFacultatifSelectionne(): void{
             //Permet de conditionner la possibilité d'appuyer sur le bouton modifier
             if(this.ElementFacultatifAffichageActif)
             {
-                const valeurEF=this.ElementFacultatifSelectionne
-                let valeurEP=""||undefined;
-                
-                if(this.ElementPrincipalSelectionne!=""){
-                    const liste= await this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)||undefined
-                    if(liste!=undefined){
-                        valeurEP = liste[this.LabelElementFacultatif.toLowerCase()][this.ValeurElementFacultatif]
+                let valeurEP: number|undefined=undefined;
+                if(this.ElementPrincipalSelectionne){
+                    const elementPrincipal: JsonLangue|JsonPersonnage|JsonVersion|undefined= this.ElementPrincipalListe.find(ep=>ep[this.ValeurElementPrincipal]==this.ElementPrincipalSelectionne)
+                    if(elementPrincipal){
+                        valeurEP = elementPrincipal[this.LabelElementFacultatif.toLowerCase()][this.ValeurElementFacultatif]
+                        console.log(valeurEP)
                     }
                     else{
-                        valeurEP=valeurEF
+                        valeurEP=this.ElementFacultatifSelectionne
                     }
                 }
                 else{
-                    valeurEP=valeurEF
+                    valeurEP=this.ElementFacultatifSelectionne
                 }
-                if(valeurEF!=valeurEP){
+                if(this.ElementFacultatifSelectionne!=valeurEP){
                     this.modificationOK=true
                 }
                 else{
@@ -287,16 +287,15 @@ export default {
                 this.modificationOK=false
             }
         },
-        texteCreation(){
+        texteCreation(): void{
             this.verifierDoublon()
-            console.log(this.doublon)
         }
     },
     created() {
         // Recuperation de la prop et assignation de celle ci a la variable 'NomDeLaPage'
-        const prop1 = this.$route.query.prop1;
-        const propVideo = this.$route.query.propVideo;
-        const propDatabase = this.$route.query.propDatabase;
+        const prop1: LocationQueryValue | LocationQueryValue[] = this.$route.query.prop1;
+        const propVideo: LocationQueryValue | LocationQueryValue[] = this.$route.query.propVideo;
+        const propDatabase: LocationQueryValue | LocationQueryValue[] = this.$route.query.propDatabase;
         if (typeof prop1 === 'string') {
             this.NomDeLaPage=prop1
             this.recuperationDonneesLVA()

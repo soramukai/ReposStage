@@ -11,7 +11,6 @@
                         ref="video"
                         controls>
                       </video>
-                      <!-- <video id="myVideo" :src="cheminDeLaVideo" controls></video> -->
                     </v-col>
                 </v-row>
                 <div id="selectionAffichage">
