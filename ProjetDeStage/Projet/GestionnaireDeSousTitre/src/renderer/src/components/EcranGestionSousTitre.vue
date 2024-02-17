@@ -222,6 +222,7 @@
         <div 
           class="section">
             <v-data-table
+              id="tableauSousTitre"
               fixed-header
               v-model="ligneSelectionnee"
               :items="tableauSousTitre"  
@@ -585,9 +586,15 @@ export default {
           const child: Element = l.children?.[1];
           return !this.ligneSelectionnee.includes(parseInt(child?.textContent ?? ''));
         });
-        trsS.forEach(tr=>{
-          tr.className="v-data-table__tr v-data-table__tr--clickable"
-        })
+        trsS.forEach(tr => {
+          if (tr instanceof HTMLElement) {
+              tr.className = "v-data-table__tr v-data-table__tr--clickable";
+              tr.style.backgroundColor = '#2F3241';
+              tr.style.color = '#86a5b1';
+          } else {
+              console.error("L'élément n'est pas de type HTMLElement.");
+          }
+        });
       },
       async miseAJoursEcran(): Promise<void>{
         //Si une seul ligne est selectionné
@@ -621,7 +628,14 @@ export default {
           return this.ligneSelectionnee.includes(parseInt(child?.textContent ?? ''));
         });
         trsS.forEach(tr=>{
-          tr.className="v-data-table__tr v-data-table__tr--clickableSelected"
+          if (tr instanceof HTMLTableRowElement) {
+              tr.className = "v-data-table__tr v-data-table__tr--clickableSelected";
+              tr.style.backgroundColor = '#86a5b1';
+              tr.style.cursor = "pointer";
+              tr.style.color = "#2F3241";
+          } else {
+              console.error("L'élément n'est pas de type HTMLTableRowElement.");
+          }
         })
       },
       numeroterLigne(): void{
@@ -667,6 +681,21 @@ export default {
         this.versionsVisible= await window.electron.ipcRenderer.invoke('electron:chargerVersion')
         // @ts-ignore (define in dts)
         this.personnagesVisible= await window.electron.ipcRenderer.invoke('electron:chargerPersonnage')
+
+        let tableCheckBox: NodeListOf<Element>= document.querySelectorAll('.v-selection-control__input input')
+        tableCheckBox.forEach(element => {
+          if (element instanceof HTMLElement) {
+              element.style.cursor = "pointer";
+              element.style.position = "absolute";
+              element.style.top = "1em";
+              element.style.opacity = "1";
+              element.style.width = "40%";
+              element.style.height = "40%";
+              element.style.left = "1em";
+          } else {
+              console.error("L'élément n'est pas de type HTMLElement.");
+          }
+        });
       },
       verifierDoublon(): void{
 
@@ -703,6 +732,12 @@ export default {
       async mounted(){
       //Sert a enlever l'outil de pagination du v-data-table
       (document.querySelector(".v-data-table-footer")as HTMLElement).innerHTML=""
+      const table = document.getElementById('tableauSousTitre');
+      if (table) {
+          table.style.height = this.tableHeight.toString();
+          table.style.backgroundColor = '#2F3241';
+          table.style.color = '#86a5b1';
+      }
 
       let ths=document.querySelectorAll('th')
       ths.forEach(th=>{
