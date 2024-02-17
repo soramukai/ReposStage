@@ -379,10 +379,14 @@ export default {
         }
         this.tableauSousTitre=tableauFiltre3
         this.changementTimeCode()
+        await new Promise(resolve => setTimeout(resolve, 10));
+        this.fixeCSS()
       },
       async actualiserTableau(): Promise<void>{
         // @ts-ignore (define in dts)
         this.tableauSousTitre= await window.electron.ipcRenderer.invoke('electron:chargerLigne')
+        await new Promise(resolve => setTimeout(resolve, 10));
+        this.fixeCSS()
         let tab = this.tableauSousTitre
         tab.sort((a, b) => {
 
@@ -681,7 +685,10 @@ export default {
         this.versionsVisible= await window.electron.ipcRenderer.invoke('electron:chargerVersion')
         // @ts-ignore (define in dts)
         this.personnagesVisible= await window.electron.ipcRenderer.invoke('electron:chargerPersonnage')
-
+        await new Promise(resolve => setTimeout(resolve, 10));
+        this.fixeCSS()
+      },
+      fixeCSS(){
         let tableCheckBox: NodeListOf<Element>= document.querySelectorAll('.v-selection-control__input input')
         tableCheckBox.forEach(element => {
           if (element instanceof HTMLElement) {
