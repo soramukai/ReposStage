@@ -7,18 +7,16 @@ import { EntiteeCouleur } from '../Entitee/EntiteeCouleur';
 
 export default class dbConnection {
 
-    static dataSource: DataSource|null;
+    private static dataSource: DataSource|undefined;
     static dbOn: boolean = false;
 
     static async initialisationBaseDeDonnee(_path:string): Promise<void>{
-        if(!dbConnection.dataSource){
-            dbConnection.dataSource = new DataSource({
-                type: 'sqlite',
-                database: _path,
-                synchronize: true,
-                entities: [EntiteeLangue,EntiteePersonnage,EntiteeVersion,EntiteeLigne,EntiteeCouleur],
-            });
-        }
+        dbConnection.dataSource = new DataSource({
+            type: 'sqlite',
+            database: _path,
+            synchronize: true,
+            entities: [EntiteeLangue,EntiteePersonnage,EntiteeVersion,EntiteeLigne,EntiteeCouleur],
+        });
         try {
             // Attendez que la connexion à la base de données soit établie
             await dbConnection.dataSource.initialize();
@@ -27,14 +25,25 @@ export default class dbConnection {
             await dbConnection.dataSource.query('PRAGMA foreign_keys = ON;');
 
             console.log('Base de données initialisée avec succès.');
+            dbConnection.dbOn = true;
         } catch (error) {
             console.error("Erreur lors de l'initialisation de la base de données :", error);
+            dbConnection.dbOn = false;
         }
     }
-
+    static async recupererDataSource(_path: string = ""): Promise<DataSource|undefined>{
+        if(dbConnection.dataSource && dbConnection.dbOn){
+            return dbConnection.dataSource;
+        }else{
+            await dbConnection.initialisationBaseDeDonnee(_path);
+            return dbConnection.dataSource;
+        }
+    }
     static async fermetureConnectionBaseDeDonnee():Promise<void>{
         try {
             await dbConnection.dataSource?.destroy();
+            dbConnection.dbOn = false;
+            dbConnection.dataSource = undefined;
             console.log('Connexion à la base de données fermée avec succès.');
         } catch (error) {
             console.error("Erreur lors de la fermeture de la connexion à la base de données :", error);

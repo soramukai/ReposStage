@@ -16,8 +16,8 @@ export class EntiteeLangue{
 
 }
 
-export async function creerLangue(_json: JsonPersonnageLangueCouleur):Promise<void>{
-    const table: Repository<EntiteeLangue>|undefined = dbConnection.dataSource?.getRepository(EntiteeLangue)
+export async function creerLangue(_json: JsonPersonnageLangueCouleur):Promise<boolean>{
+    const table: Repository<EntiteeLangue>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLangue)
     let check: EntiteeLangue|null|undefined = await table?.findOne({
             where : {
                 langue_nom : _json.nom
@@ -30,20 +30,22 @@ export async function creerLangue(_json: JsonPersonnageLangueCouleur):Promise<vo
         langue.langue_nom = _json.nom;
         await table?.save(langue)
         console.log("La ligne à été sauvegardé")
+        return true
     }
     else{
         console.error("La ligne existe deja")
+        return false
     }
 }
 
 export async function chargerLangue():Promise<EntiteeLangue[]>{
-    const table: Repository<EntiteeLangue>|undefined = dbConnection.dataSource?.getRepository(EntiteeLangue)
+    const table: Repository<EntiteeLangue>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLangue)
     return table?await table.find():[]
 }
 
-export async function modifierLangue(_idAModifier:number,_json:JsonPersonnageLangueCouleur):Promise<void>{
+export async function modifierLangue(_idAModifier:number,_json:JsonPersonnageLangueCouleur):Promise<boolean>{
 
-    const table: Repository<EntiteeLangue>|undefined = dbConnection.dataSource?.getRepository(EntiteeLangue)
+    const table: Repository<EntiteeLangue>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLangue)
     let check: EntiteeLangue|null|undefined = await table?.findOne({
         where:{
             langue_id:_idAModifier,
@@ -54,14 +56,16 @@ export async function modifierLangue(_idAModifier:number,_json:JsonPersonnageLan
 
         await table?.save(check)
         console.log("La ligne à été modifié")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }
 
-export async function supprimerLangue(_idASupprimer:number):Promise<void>{
-    const table: Repository<EntiteeLangue>|undefined = dbConnection.dataSource?.getRepository(EntiteeLangue)
+export async function supprimerLangue(_idASupprimer:number):Promise<boolean>{
+    const table: Repository<EntiteeLangue>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLangue)
     let check: EntiteeLangue|null|undefined = await table?.findOne({
         where:{
             langue_id:_idASupprimer
@@ -70,8 +74,10 @@ export async function supprimerLangue(_idASupprimer:number):Promise<void>{
     if(check){
         await table?.remove(check)
         console.log("La ligne a été supprimé")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }

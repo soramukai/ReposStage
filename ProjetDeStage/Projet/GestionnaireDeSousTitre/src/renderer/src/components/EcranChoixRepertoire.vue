@@ -179,6 +179,7 @@ export default {
   },
   methods: {
     async selectionnerDossier() {
+      this.repertoireDeTravail.modifierUrlRepertoire('')
       this.cheminDuRepertoire="En Selection"
       // @ts-ignore (define in dts)
       window.electron.ipcRenderer.send('electron:selectionDossier');
@@ -291,18 +292,25 @@ export default {
   },
   async mounted(){
     // @ts-ignore (define in dts)
-    window.electron.ipcRenderer.send('electron:dbSwitchOff')
-    /*window.electron.ipcRenderer.on('electron:progressPercent', (event, progress) => {
-      this.ProgressionConverstion = progress;
-    });*/
-    // @ts-ignore (define in dts)
     window.electron.ipcRenderer.on('electron:copieSucces',(_)=>{
       this.chargerRepertoire()
     })
   },
   watch:{
-    async cheminDuRepertoire(){
-      this.chargerRepertoire()
+    async cheminDuRepertoire(newValue,oldValue){
+      if(oldValue!=newValue){
+        if(newValue!='En Selection' && newValue!=''){
+          this.chargerRepertoire()
+        }else{
+          this.recapitulatif=[]
+          this.cheminDuRepertoire=''
+        }
+      }
+      else
+      {
+        this.recapitulatif=[]
+        this.cheminDuRepertoire=''
+      }
     },
     /*ProgressionConverstion(){
       if(this.ProgressionConverstion=="100"){
@@ -311,7 +319,6 @@ export default {
       }
     },*/
     fichierVideoSelectionnee(){
-      console.log(this.videoAimporter)
       // Chemin du fichier
       this.repertoireDeTravail.modifierUrlVideo(this.cheminDuRepertoire + '\\' + this.fichierVideoSelectionnee);
 
@@ -334,7 +341,6 @@ export default {
       else{
         this.repertoireDeTravail.modifierUrlVideo("")
       }
-
     },
     fichierDatabaseSelectionnee(){
       // Chemin du fichier

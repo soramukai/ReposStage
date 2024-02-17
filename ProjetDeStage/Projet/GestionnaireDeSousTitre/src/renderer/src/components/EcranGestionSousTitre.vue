@@ -258,7 +258,8 @@
               to="/">
                 <v-btn 
                   class="bouton optionProjet retour" 
-                  variant="tonal">
+                  variant="tonal"
+                  @click="fermerConnectionDatabase">
                     Retour
                 </v-btn>
             </router-link>
@@ -310,7 +311,7 @@ export default {
             {title:'Texte',value:'ligne_texte',sortable:true},
             {title:'Personnage',value:'personnage.personnage_nom',sortable:true},
             {title:'Couleur',value:'ligne_couleur',sortable:true}
-          ],
+          ] as any[]|undefined,
           couleurs:[
             {"nom":"par defaut","code":"#85A4B1"},
             { "nom": "Noir", "code": "#000000" },
@@ -413,13 +414,20 @@ export default {
         if(this.mode=='Creation'){
           // @ts-ignore (define in dts)
           window.electron.ipcRenderer.send('electron:creerLigne',ligne)
+            // @ts-ignore (define in dts)
+          window.electron.ipcRenderer.on('electron:creationLigneReussi',async()=>{
+              await this.actualiserTableau()
+          })
         }else{
           this.ligneSelectionnee.forEach(l=>{
             // @ts-ignore (define in dts)
             window.electron.ipcRenderer.send('electron:modifierLigne',l,ligne)
+            // @ts-ignore (define in dts)
+            window.electron.ipcRenderer.on('electron:modificationLigneReussi',async()=>{
+              await this.actualiserTableau()
+            })
           })
         }
-        setTimeout(async()=>{await this.actualiserTableau()},100)
       },
       async supprimerSousTitre(): Promise<void>{
         if (confirm("Êtes-vous sûr de vouloir supprimer cet élément ?\nCeci est une action irreverssible!")){
@@ -429,8 +437,11 @@ export default {
           })
           this.tableauSousTitre=[]
           this.ligneSelectionnee=[]
-          setTimeout(async()=>{await this.actualiserTableau()},1)
-          }
+            // @ts-ignore (define in dts)
+          window.electron.ipcRenderer.on('electron:suppressionLigneReussi',async()=>{
+            await this.actualiserTableau()
+          })
+        }
       },
       changementTimeCode(): void{
         let currentTime: number = (this.$refs.video as HTMLVideoElement).currentTime;
@@ -491,7 +502,7 @@ export default {
         let formattedTime: string = `${heures.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')},${millisecondes.toString().padStart(3, '0')}`;
         return formattedTime;
       },
-      ouvrirFenettreGestionLVA(page): void{
+      ouvrirFenettreGestionLVA(page: string): void{
         this.$router.push({
           path: '/modification-lva',
           query: {
@@ -512,17 +523,19 @@ export default {
         }
         this.versionSelectionne = this.versions.length>0?this.versions[0].version_id:''
       },
-      async remplirChamps(item): Promise<void>{
-          this.langueSelectionne=await item.version.langue.langue_id
+      async remplirChamps(item: JsonLigne|undefined): Promise<void>{
+        if(item){
+          this.langueSelectionne= item.version.langue.langue_id
           await new Promise(resolve => setTimeout(resolve, 10));
-          this.versionSelectionne=await item.version.version_id
-          this.personnageSelectionne=await item.personnage==null?"":item.personnage.personnage_id
+          this.versionSelectionne= item.version.version_id
+          this.personnageSelectionne= item.personnage==null?"":item.personnage.personnage_id
           this.idSelectionne=item.ligne_id
           this.timecodeDebutSelectionne=item.ligne_timecode_Debut
           this.timecodeFinSelectionne=item.ligne_timecode_Fin
           this.texteSelectionne=item.ligne_texte
           this.zIndexSelectionne=item.ligne_z_index
           this.couleurSelectionne=item.ligne_couleur_hexa
+        }
       },
       viderChamps(): void{
         if(this.ligneSelectionnee.length>1){
@@ -625,8 +638,9 @@ export default {
           // @ts-ignore (define in dts)
           window.electron.ipcRenderer.send('electron:initialiserDatabase', this.cheminDeLaDatabase)//voir pour attendre la reponse de la BDD
           // @ts-ignore (define in dts)
-          window.electron.ipcRenderer.send('electron:dbSwitchOn')
-          setTimeout(async()=>{await this.initialiserDonne()},500)//et supprimer ce timeOut
+          window.electron.ipcRenderer.on('electron:connectionReussi',async (_)=>{
+            await this.initialiserDonne()
+          })
         }else{
           await this.initialiserDonne()
         }
@@ -678,6 +692,12 @@ export default {
         this.ligneSelectionnee=[]
         await this.miseAJoursEcran()
         await this.actualiserTableau()
+      },
+      fermerConnectionDatabase(): void{
+        // @ts-ignore (define in dts)
+        window.electron.ipcRenderer.send('electron:fermerDatabase')
+        // @ts-ignore (define in dts)
+        window.electron.ipcRenderer.send('electron:dbSwitchOff')
       }
     },  
       async mounted(){
@@ -836,6 +856,7 @@ export default {
       }
       if (typeof propDatabase === 'string') {
         this.cheminDeLaDatabase = propDatabase;
+        console.log(this.cheminDeLaDatabase)
       } else {
         console.error('PropDatabase est undefined.');
         this.messageInformatif='PropDatabase est undefined.'

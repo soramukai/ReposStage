@@ -183,7 +183,7 @@ export default {
                 default:
                     console.error("Page non Chargé")
             }
-            this.ElementPrincipalListe = await this.chargementLVA(this.NomDeLaPage)
+            await this.chargementLVA(this.NomDeLaPage)
         },
         // Fonction qui permet de formater un JSON a envoyer dans une commande IPC afin d'effectuer une requette à la base de donnée
         creationJsonVersion(): JsonIPC{
@@ -194,33 +194,43 @@ export default {
             }
         },
         // Fonction qui permet de faire une requette de creation à la base de donnée via une commande IPC
-        creationLVA(): void{
+        async creationLVA(): Promise<void>{
             // @ts-ignore (define in dts)
             window.electron.ipcRenderer.send('electron:creer'+this.NomDeLaPage, this.creationJsonVersion())
-            location.reload();
+                        // @ts-ignore (define in dts)
+            window.electron.ipcRenderer.on('electron:creation'+this.NomDeLaPage+'Reussi',async ()=>{
+                await this.chargementLVA(this.NomDeLaPage)
+            })
         },
         // Fonction qui permet de faire une requette de chargement à la base de donnée via une commande IPC
-        async chargementLVA(_nomDeLEntitee): Promise<JsonLangue[]|JsonPersonnage[]|JsonVersion[]>{
+        async chargementLVA(_nomDeLEntitee): Promise<void>{
             // @ts-ignore (define in dts)
-            return await window.electron.ipcRenderer.invoke('electron:charger'+_nomDeLEntitee)
+            this.ElementPrincipalListe =  await window.electron.ipcRenderer.invoke('electron:charger'+_nomDeLEntitee)
+            
         },
         async chargementLangue(_nomDeLEntitee): Promise<JsonLangue[]>{
             // @ts-ignore (define in dts)
             return await window.electron.ipcRenderer.invoke('electron:charger'+_nomDeLEntitee)
         },
         // Fonction qui permet de faire une requette de modification à la base de donnée via une commande IPC
-        modificationLVA(): void{     
+        async modificationLVA(): Promise<void>{     
             // @ts-ignore (define in dts)
             window.electron.ipcRenderer.send('electron:modifier'+this.NomDeLaPage,this.ElementPrincipalSelectionne, this.creationJsonVersion())
-            location.reload();
+            // @ts-ignore (define in dts)
+            window.electron.ipcRenderer.on('electron:modification'+this.NomDeLaPage+'Reussi',async()=>{
+                await this.chargementLVA(this.NomDeLaPage)
+            })
         },
         // Fonction qui permet de faire une requette de suppression à la base de donnée via une commande IPC
-        suppressionLVA(): void{
+        async suppressionLVA(): Promise<void>{
             if (confirm(this.messageSuppression)){
                 // @ts-ignore (define in dts)
                 window.electron.ipcRenderer.send('electron:supprimer'+this.NomDeLaPage,this.ElementPrincipalSelectionne)
+                // @ts-ignore (define in dts)
+                window.electron.ipcRenderer.on('electron:suppression'+this.NomDeLaPage+'Reussi',async()=>{
+                    await this.chargementLVA(this.NomDeLaPage)
+                })
             }
-            location.reload();
         },
         verifierDoublon(): void{
             this.doublon=false

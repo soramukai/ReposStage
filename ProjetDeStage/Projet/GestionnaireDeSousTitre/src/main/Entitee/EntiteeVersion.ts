@@ -24,8 +24,8 @@ export class EntiteeVersion{
 
 }
 
-export async function creerVersion(_version: JsonVersion): Promise<void>{
-    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+export async function creerVersion(_version: JsonVersion): Promise<boolean>{
+    const table: Repository<EntiteeVersion>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeVersion)
     let check: EntiteeVersion|null|undefined = await table?.findOne({
         where:{
             version_nom: _version.nom
@@ -36,20 +36,22 @@ export async function creerVersion(_version: JsonVersion): Promise<void>{
         version.version_nom = _version.nom;
         await table?.save(version)
         console.log("La ligne à été sauvegardé")
+        return true
     }
     else{
         console.error("La ligne existe deja")
+        return false
     }
 }
 
 export async function chargerVersion(): Promise<EntiteeVersion[]>{
-    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+    const table: Repository<EntiteeVersion>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeVersion)
     return table? await table.find({ relations: ['langue'] }):[];
 }
 
 export async function chargerVersionDeLangue(_nomLangue: string): Promise<EntiteeVersion[]> {
-    const tableVersion: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion);
-    const tableLangue: Repository<EntiteeLangue>|undefined = dbConnection.dataSource?.getRepository(EntiteeLangue);
+    const tableVersion: Repository<EntiteeVersion>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeVersion);
+    const tableLangue: Repository<EntiteeLangue>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLangue);
 
     const langue: EntiteeLangue|null|undefined = await tableLangue?.findOne({ 
         where: { 
@@ -66,8 +68,8 @@ export async function chargerVersionDeLangue(_nomLangue: string): Promise<Entite
     }
 }
 
-export async function modifierVersion(_idVersionAModifier:number,_json:JsonVersion): Promise<void>{
-    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+export async function modifierVersion(_idVersionAModifier:number,_json:JsonVersion): Promise<boolean>{
+    const table: Repository<EntiteeVersion>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeVersion)
     const check:EntiteeVersion|null|undefined = await table?.findOne({
         where:{
             version_id:_idVersionAModifier
@@ -79,20 +81,24 @@ export async function modifierVersion(_idVersionAModifier:number,_json:JsonVersi
 
         await table?.save(check)
         console.log("La ligne à été modifié")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }
 
-export async function supprimerVersion(_idASupprimer:number): Promise<void>{
-    const table: Repository<EntiteeVersion>|undefined = dbConnection.dataSource?.getRepository(EntiteeVersion)
+export async function supprimerVersion(_idASupprimer:number): Promise<boolean>{
+    const table: Repository<EntiteeVersion>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeVersion)
     const check: EntiteeVersion|null|undefined = await table?.findOne({where:{version_id:_idASupprimer}}) 
     if(check){
         await table?.remove(check)
         console.log("La ligne a été supprimé")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }

@@ -15,8 +15,8 @@ export class EntiteePersonnage{
     lignes: EntiteeLigne[];
 }
 
-export async function creerPersonnage(_json: JsonPersonnageLangueCouleur): Promise<void>{
-    const table: Repository<EntiteePersonnage>|undefined = dbConnection.dataSource?.getRepository(EntiteePersonnage)
+export async function creerPersonnage(_json: JsonPersonnageLangueCouleur): Promise<boolean>{
+    const table: Repository<EntiteePersonnage>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteePersonnage)
     let check: EntiteePersonnage|null|undefined = await table?.findOne({
         where:{
             personnage_nom: _json.nom,
@@ -27,19 +27,21 @@ export async function creerPersonnage(_json: JsonPersonnageLangueCouleur): Promi
 
         await table?.save(perso)
         console.log("La ligne à été sauvegardé")
+        return true
     }
     else{
         console.error("La ligne existe deja")
+        return false
     }
 }
 
 export async function chargerPersonnage(): Promise<EntiteePersonnage[]>{
-    const table: Repository<EntiteePersonnage>|undefined = dbConnection.dataSource?.getRepository(EntiteePersonnage)
+    const table: Repository<EntiteePersonnage>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteePersonnage)
     return table?await table.find():[]
 }
 
-export async function modifierPersonnage(_idAModifier:number,_json:JsonPersonnageLangueCouleur): Promise<void>{
-    const table: Repository<EntiteePersonnage>|undefined = dbConnection.dataSource?.getRepository(EntiteePersonnage)
+export async function modifierPersonnage(_idAModifier:number,_json:JsonPersonnageLangueCouleur): Promise<boolean>{
+    const table: Repository<EntiteePersonnage>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteePersonnage)
     let check: EntiteePersonnage|null|undefined = await table?.findOne({
         where:{
             personnage_id: _idAModifier
@@ -51,14 +53,16 @@ export async function modifierPersonnage(_idAModifier:number,_json:JsonPersonnag
         }
         await table?.save(check)
         console.log("La ligne à été modifié")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }
 
-export async function supprimerPersonnage(_idASupprimer:number): Promise<void>{
-    const table: Repository<EntiteePersonnage>|undefined = dbConnection.dataSource?.getRepository(EntiteePersonnage)
+export async function supprimerPersonnage(_idASupprimer:number): Promise<boolean>{
+    const table: Repository<EntiteePersonnage>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteePersonnage)
     let check: EntiteePersonnage|null|undefined = await table?.findOne({
         where:{
             personnage_id:_idASupprimer
@@ -67,8 +71,10 @@ export async function supprimerPersonnage(_idASupprimer:number): Promise<void>{
     if(check){
         await table?.remove(check)
         console.log("La ligne a été supprimé")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }

@@ -10,14 +10,14 @@ import {JsonPersonnageLangueCouleur,JsonLigne,JsonVersion} from "../Interface/In
 export default class IpcDb {
 
     static initialisation(): void {
-        ipcMain.on('electron:initialiserDatabase',async (_, _path: string): Promise<void>=>{
-            dbConnection.initialisationBaseDeDonnee(_path)
+        ipcMain.on('electron:initialiserDatabase',async (event, _path: string): Promise<void>=>{
+            await dbConnection.recupererDataSource(_path)
+            if(dbConnection.dbOn){
+                event.reply('electron:connectionReussi')
+            }
         })
-        ipcMain.on('electron:dbSwitchOff',(): void=>{
-            dbConnection.dbOn=false
-        })
-        ipcMain.on('electron:dbSwitchOn',(): void=>{
-            dbConnection.dbOn=true
+        ipcMain.on('electron:fermerDatabase',async (_): Promise<void>=>{
+            await dbConnection.fermetureConnectionBaseDeDonnee()
         })
         ipcMain.handle('electron:dbActive',(): boolean=>{
             return dbConnection.dbOn
@@ -25,22 +25,30 @@ export default class IpcDb {
         //////////////////Fonction de comunication avec la base de donné avec typeorm//////////////////
 
         //Langue
-        ipcMain.on('electron:creerLangue',async (_, _json:JsonPersonnageLangueCouleur): Promise<void>=>{
-            await creerLangue(_json);
+        ipcMain.on('electron:creerLangue',async (event, _json:JsonPersonnageLangueCouleur): Promise<void>=>{
+            if(await creerLangue(_json)){
+                event.reply('electron:creationLangueReussi');
+            }
         })
         ipcMain.handle('electron:chargerLangue',async (): Promise<EntiteeLangue[]>=>{
             return await chargerLangue();
         });    
-        ipcMain.on('electron:modifierLangue',async (_, _idNomAModifier:number,_json:JsonPersonnageLangueCouleur): Promise<void>=>{
-            await modifierLangue(_idNomAModifier,_json);
+        ipcMain.on('electron:modifierLangue',async (event, _idNomAModifier:number,_json:JsonPersonnageLangueCouleur): Promise<void>=>{
+            if(await modifierLangue(_idNomAModifier,_json)){
+                event.reply('electron:modificationLangueReussi');
+            }
         })
-        ipcMain.on('electron:supprimerLangue',async (_, _idLangueASupprimer:number): Promise<void>=>{
-            await supprimerLangue(_idLangueASupprimer);
+        ipcMain.on('electron:supprimerLangue',async (event, _idLangueASupprimer:number): Promise<void>=>{
+            if(await supprimerLangue(_idLangueASupprimer)){
+                event.reply('electron:suppressionLangueReussi');
+            }
         })
 
         //Version
-        ipcMain.on('electron:creerVersion',async (_, _version:JsonVersion): Promise<void>=>{
-            await creerVersion(_version);
+        ipcMain.on('electron:creerVersion',async (event, _version:JsonVersion): Promise<void>=>{
+            if(await creerVersion(_version)){
+                event.reply('electron:creationVersionReussi');
+            }
         })
         ipcMain.handle('electron:chargerVersion',async (): Promise<EntiteeVersion[]>=>{
             return await chargerVersion();
@@ -48,46 +56,66 @@ export default class IpcDb {
         ipcMain.handle('electron:chargerVersionDeLangue',async (_, _langue:string): Promise<EntiteeVersion[]>=>{
             return await chargerVersionDeLangue(_langue);
         });
-        ipcMain.on('electron:modifierVersion',async (_, _idVersionAModifier:number,_json:JsonVersion): Promise<void>=>{
-            await modifierVersion(_idVersionAModifier,_json);
+        ipcMain.on('electron:modifierVersion',async (event, _idVersionAModifier:number,_json:JsonVersion): Promise<void>=>{
+            if(await modifierVersion(_idVersionAModifier,_json)){
+                event.reply('electron:modificationVersionReussi')
+            }
         })
-        ipcMain.on('electron:supprimerVersion',async (_, _idVersionASupprimer:number): Promise<void>=>{
-            await supprimerVersion(_idVersionASupprimer);
+        ipcMain.on('electron:supprimerVersion',async (event, _idVersionASupprimer:number): Promise<void>=>{
+            if(await supprimerVersion(_idVersionASupprimer)){
+                event.reply('electron:supressionVersionReussi')
+            }
         })
 
         //Ligne
-        ipcMain.on('electron:creerLigne',async (_, _json: JsonLigne): Promise<void>=>{
-            await creerLigne(_json);
+        ipcMain.on('electron:creerLigne',async (event, _json: JsonLigne): Promise<void>=>{
+            if(await creerLigne(_json)){
+                event.reply('electron:creationLigneReussi')
+            }
         })
         ipcMain.handle('electron:chargerLigne',async (): Promise<EntiteeLigne[]>=>{
             return await chargerLigne();
         });
-        ipcMain.on('electron:supprimerSousTitre',async (_, _uid:number): Promise<void>=>{
-            await supprimerLigne(_uid);
+        ipcMain.on('electron:supprimerSousTitre',async (event, _uid:number): Promise<void>=>{
+            if(await supprimerLigne(_uid)){
+                event.reply('electron:suppressionLigneReussi')
+            }
         })
-        ipcMain.on('electron:modifierLigne',async (_, _uid: number,_json: JsonLigne): Promise<void>=>{
-            await modifierLigne(_uid,_json)
+        ipcMain.on('electron:modifierLigne',async (event, _uid: number,_json: JsonLigne): Promise<void>=>{
+            if(await modifierLigne(_uid,_json)){
+                event.reply('electron:modificationLigneReussi')
+            }
         })
-        ipcMain.on('electron:dupliquerLigne',async (_, _uid: number): Promise<void>=>{
-            await dupliquerLigne(_uid)
+        ipcMain.on('electron:dupliquerLigne',async (event, _uid: number): Promise<void>=>{
+            if(await dupliquerLigne(_uid)){
+                event.reply('electron:duplicationLigneReussi')
+            }
         })
 
         //Personnage
-        ipcMain.on('electron:creerPersonnage',async (_, _json: JsonPersonnageLangueCouleur): Promise<void>=>{
-            await creerPersonnage(_json);
+        ipcMain.on('electron:creerPersonnage',async (event, _json: JsonPersonnageLangueCouleur): Promise<void>=>{
+            if(await creerPersonnage(_json)){
+                event.reply('electron:creationPersonnageReussi')
+            }
         });
         ipcMain.handle('electron:chargerPersonnage',async (): Promise<EntiteePersonnage[]>=>{
             return await chargerPersonnage();
         });
-        ipcMain.on('electron:modifierPersonnage',async (_, _idNomAModifier:number,_json: JsonPersonnageLangueCouleur): Promise<void>=>{
-            await modifierPersonnage(_idNomAModifier,_json);
+        ipcMain.on('electron:modifierPersonnage',async (event, _idNomAModifier:number,_json: JsonPersonnageLangueCouleur): Promise<void>=>{
+            if(await modifierPersonnage(_idNomAModifier,_json)){
+                event.reply('electron:modificationPersonnageReussi')
+            }
         })
-        ipcMain.on('electron:supprimerPersonnage',async (_, _idPersonnageASupprimer:number): Promise<void>=>{
-            await supprimerPersonnage(_idPersonnageASupprimer);
+        ipcMain.on('electron:supprimerPersonnage',async (event, _idPersonnageASupprimer:number): Promise<void>=>{
+            if(await supprimerPersonnage(_idPersonnageASupprimer)){
+                event.reply('electron:suppressionPersonnageReussi')
+            }
         })
         //Couleur
-        ipcMain.on('electron:creerCouleur',async (_, _json: JsonPersonnageLangueCouleur): Promise<void>=>{
-            await creerCouleur(_json);
+        ipcMain.on('electron:creerCouleur',async (event, _json: JsonPersonnageLangueCouleur): Promise<void>=>{
+            if(await creerCouleur(_json)){
+                event.reply('electron:creationCouleurReussi')
+            }
         })
         ipcMain.handle('electron:chargerCouleur',async (): Promise<EntiteeCouleur[]>=>{
             return await chargerCouleur();

@@ -45,8 +45,8 @@ export class EntiteeLigne {
     personnage: EntiteePersonnage|undefined|null;
 }
 
-export async function creerLigne(_json: JsonLigne):Promise<void>{
-    const table: Repository<EntiteeLigne>|undefined = dbConnection.dataSource?.getRepository(EntiteeLigne)
+export async function creerLigne(_json: JsonLigne):Promise<boolean>{
+    const table: Repository<EntiteeLigne>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLigne)
     if(!_json.id){
         _json.id =- 1
     }
@@ -74,19 +74,21 @@ export async function creerLigne(_json: JsonLigne):Promise<void>{
 
         await table?.save(ligne);
         console.log("La ligne à été sauvegardée")
+        return true
     }
     else {
         console.error("La ligne existe déjà")
+        return false
     }
 }
 
 export async function chargerLigne():Promise<EntiteeLigne[]>{
-    const table: Repository<EntiteeLigne>|undefined = dbConnection.dataSource?.getRepository(EntiteeLigne)
+    const table: Repository<EntiteeLigne>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLigne)
     return table? await table.find({ relations: ["version", "version.langue","personnage"]}):[]
 }
 
-export async function modifierLigne(_uid:number,_json:JsonLigne):Promise<void>{
-    const table: Repository<EntiteeLigne>|undefined = dbConnection.dataSource?.getRepository(EntiteeLigne)
+export async function modifierLigne(_uid:number,_json:JsonLigne):Promise<boolean>{
+    const table: Repository<EntiteeLigne>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLigne)
     const oldLigne: EntiteeLigne|null|undefined = await table?.findOne({
         where: {
             ligne_id_interne:_uid
@@ -135,15 +137,16 @@ export async function modifierLigne(_uid:number,_json:JsonLigne):Promise<void>{
 
         await table?.save(newLigne);
         console.log("La ligne à été sauvegardée")
-
+        return true
     }
     else {
         console.error("La ligne existe déjà")
+        return false
     }
 }
 
-export async function supprimerLigne(_idASupprimer: number): Promise<void>{
-    const table: Repository<EntiteeLigne>|undefined = dbConnection.dataSource?.getRepository(EntiteeLigne)
+export async function supprimerLigne(_idASupprimer: number): Promise<boolean>{
+    const table: Repository<EntiteeLigne>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLigne)
     let check: EntiteeLigne|null|undefined = await table?.findOne({
         where:{
             ligne_id_interne:_idASupprimer
@@ -152,14 +155,16 @@ export async function supprimerLigne(_idASupprimer: number): Promise<void>{
     if(check){
         await table?.remove(check)
         console.log("La ligne a été supprimé")
+        return true
     }
     else{
         console.error("La ligne n'existe pas")
+        return false
     }
 }
 
-export async function dupliquerLigne(_uid: number): Promise<void>{    
-    const table: Repository<EntiteeLigne>|undefined = dbConnection.dataSource?.getRepository(EntiteeLigne)
+export async function dupliquerLigne(_uid: number): Promise<boolean>{    
+    const table: Repository<EntiteeLigne>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLigne)
     let check: EntiteeLigne|null|undefined = await table?.findOne({
         where: {
             ligne_id_interne: _uid
@@ -180,14 +185,16 @@ export async function dupliquerLigne(_uid: number): Promise<void>{
 
         await table?.save(ligne);
         console.log("La ligne à été sauvegardée")
+        return true
     }
     else {
         console.error("La ligne existe déjà")
+        return false
     }
 }
 
 async function getMax(_mnemonique: string): Promise<number> {
-    const table: Repository<EntiteeLigne>|undefined = dbConnection.dataSource?.getRepository(EntiteeLigne);
+    const table: Repository<EntiteeLigne>|undefined = (await dbConnection.recupererDataSource())?.getRepository(EntiteeLigne);
     let maxId: number = 0
     const maxIdResult: {maxId: number}|undefined = await table?.createQueryBuilder("ligne")
         .select("MAX(ligne." + _mnemonique + ")", "maxId")
