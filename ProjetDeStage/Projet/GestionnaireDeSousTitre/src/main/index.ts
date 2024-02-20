@@ -6,6 +6,7 @@ import ipcRepertoire from './IPC/ipcRepertoire'
 import dbConnection  from './Class/dbConnection';
 import protocolFichierLocal from './protocol/protocolFichierLocal';
 import * as path from'path'
+import IpcEntitee from './IPC/IpcEntitee';
 
 
 let mainWindow:BrowserWindow
@@ -62,10 +63,11 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  createWindow()
-  ipcRepertoire.initialisation(mainWindow)  
-  IpcDb.initialisation()
-  protocolFichierLocal.initialisation()
+  createWindow();
+  ipcRepertoire.initialisation(mainWindow);
+  IpcDb.initialisation();
+  IpcEntitee.initialisation();
+  protocolFichierLocal.initialisation();
   ipcFfmpeg.initialisation();
 
 

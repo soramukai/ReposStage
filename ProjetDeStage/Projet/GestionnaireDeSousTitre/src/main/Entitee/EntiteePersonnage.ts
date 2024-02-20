@@ -26,11 +26,11 @@ export async function creerPersonnage(_json: JsonPersonnageLangueCouleur): Promi
         perso.personnage_nom = _json.nom;
 
         await table?.save(perso)
-        console.log("La ligne à été sauvegardé")
+        //console.log("La ligne à été sauvegardé")
         return true
     }
     else{
-        console.error("La ligne existe deja")
+        //console.error("La ligne existe deja")
         return false
     }
 }
@@ -52,11 +52,11 @@ export async function modifierPersonnage(_idAModifier:number,_json:JsonPersonnag
             check.personnage_nom = _json.nom;
         }
         await table?.save(check)
-        console.log("La ligne à été modifié")
+        //console.log("La ligne à été modifié")
         return true
     }
     else{
-        console.error("La ligne n'existe pas")
+        //console.error("La ligne n'existe pas")
         return false
     }
 }
@@ -70,11 +70,11 @@ export async function supprimerPersonnage(_idASupprimer:number): Promise<boolean
     
     if(check){
         await table?.remove(check)
-        console.log("La ligne a été supprimé")
+        //console.log("La ligne a été supprimé")
         return true
     }
     else{
-        console.error("La ligne n'existe pas")
+        //console.error("La ligne n'existe pas")
         return false
     }
 }

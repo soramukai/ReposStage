@@ -24,11 +24,11 @@ export async function creerCouleur(_json: JsonPersonnageLangueCouleur):Promise<b
         }
         couleur.couleur_nom = _json.nom;
         await table?.save(couleur)
-        console.log("La ligne à été sauvegardé")
+        //console.log("La ligne à été sauvegardé")
         return true
     }
     else{
-        console.error("La ligne existe deja")
+        //console.error("La ligne existe deja")
         return false
     }
 }

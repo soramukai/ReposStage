@@ -1,8 +1,8 @@
 <!-- App.vue -->
 <script lang="ts">
-import EcranChoixRepertoire from './components/EcranChoixRepertoire.vue';
-import EcranModificationLVA from './components/EcranModificationLVA.vue';
-import EcranGestionSousTitre from './components/EcranGestionSousTitre.vue';
+import EcranChoixRepertoire from './views/EcranChoixRepertoire.vue';
+import EcranModificationLVA from './views/EcranModificationLVA.vue';
+import EcranGestionSousTitre from './views/EcranGestionSousTitre.vue';
 
 export default {
   data() {

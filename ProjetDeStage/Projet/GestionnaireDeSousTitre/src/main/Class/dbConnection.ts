@@ -10,10 +10,10 @@ export default class dbConnection {
     private static dataSource: DataSource|undefined;
     static dbOn: boolean = false;
 
-    static async initialisationBaseDeDonnee(_path:string): Promise<void>{
+    private static async initialisationBaseDeDonnee(_url:string): Promise<void>{
         dbConnection.dataSource = new DataSource({
             type: 'sqlite',
-            database: _path,
+            database: _url,
             synchronize: true,
             entities: [EntiteeLangue,EntiteePersonnage,EntiteeVersion,EntiteeLigne,EntiteeCouleur],
         });
@@ -31,11 +31,11 @@ export default class dbConnection {
             dbConnection.dbOn = false;
         }
     }
-    static async recupererDataSource(_path: string = ""): Promise<DataSource|undefined>{
+    static async recupererDataSource(_url: string = ""): Promise<DataSource|undefined>{
         if(dbConnection.dataSource && dbConnection.dbOn){
             return dbConnection.dataSource;
         }else{
-            await dbConnection.initialisationBaseDeDonnee(_path);
+            await dbConnection.initialisationBaseDeDonnee(_url);
             return dbConnection.dataSource;
         }
     }

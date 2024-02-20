@@ -35,11 +35,11 @@ export async function creerVersion(_version: JsonVersion): Promise<boolean>{
         version.langue_id = _version.langue_id
         version.version_nom = _version.nom;
         await table?.save(version)
-        console.log("La ligne à été sauvegardé")
+        //console.log("La ligne à été sauvegardé")
         return true
     }
     else{
-        console.error("La ligne existe deja")
+        //console.error("La ligne existe deja")
         return false
     }
 }
@@ -80,11 +80,11 @@ export async function modifierVersion(_idVersionAModifier:number,_json:JsonVersi
 
 
         await table?.save(check)
-        console.log("La ligne à été modifié")
+        //console.log("La ligne à été modifié")
         return true
     }
     else{
-        console.error("La ligne n'existe pas")
+        //console.error("La ligne n'existe pas")
         return false
     }
 }
@@ -94,11 +94,11 @@ export async function supprimerVersion(_idASupprimer:number): Promise<boolean>{
     const check: EntiteeVersion|null|undefined = await table?.findOne({where:{version_id:_idASupprimer}}) 
     if(check){
         await table?.remove(check)
-        console.log("La ligne a été supprimé")
+        //console.log("La ligne a été supprimé")
         return true
     }
     else{
-        console.error("La ligne n'existe pas")
+        //console.error("La ligne n'existe pas")
         return false
     }
 }

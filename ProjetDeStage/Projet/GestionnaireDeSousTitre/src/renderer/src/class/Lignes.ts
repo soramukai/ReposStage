@@ -9,7 +9,16 @@ export default class Lignes {
     private couleur:string|undefined
     private couleurHexa:string|undefined
     
-    constructor(_id:number|undefined, _versionId:number|undefined, _timeCodeDebut:string|undefined, _timeCodeFin:string|undefined, _zIndex:number|undefined, _texte:string|undefined,_personnageId:number|undefined,_couleur:string|undefined,_couleurHexa:string|undefined){
+    constructor(
+        _id:number|undefined = undefined, 
+        _versionId:number|undefined = undefined, 
+        _timeCodeDebut:string|undefined = undefined, 
+        _timeCodeFin:string|undefined = undefined, 
+        _zIndex:number|undefined = undefined, 
+        _texte:string|undefined = undefined,
+        _personnageId:number|undefined = undefined,
+        _couleur:string|undefined = undefined,
+        _couleurHexa:string|undefined = undefined){
         this.id =_id
         this.versionId = _versionId
         this.timeCodeDebut = _timeCodeDebut
@@ -20,6 +29,27 @@ export default class Lignes {
         this.couleur = _couleur
         this.couleurHexa = _couleurHexa
     }
+
+    creationLigne(): void{
+        window.electron.ipcRenderer.send('electron:creerLigne',this)
+    }
+
+    async chargerLigne(){
+
+    }
+
+    modificationLigne(_uid: number){
+        window.electron.ipcRenderer.send('electron:modifierLigne',_uid,this)
+    }
+
+    duplicationLigne(_uid: number){
+        window.electron.ipcRenderer.send('electron:dupliquerLigne', _uid);
+    }
+
+    suppressionLigne(_uid: number){
+        window.electron.ipcRenderer.send('electron:supprimerSousTitre',_uid)
+    }
+
     recupererId():number|undefined{
         return this.id
     }

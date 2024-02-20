@@ -1,12 +1,12 @@
 // @ts-ignore (define in dts)
-import {BrowserWindow, ipcMain, dialog, OpenDialogueReturnValue } from "electron";
+import {BrowserWindow, ipcMain, dialog, OpenDialogueReturnValue, IpcMainEvent } from "electron";
 import * as fs from 'fs';
 import * as path from 'path';
 
 export default class ipcRepertoire {
     static initialisation(_mainWindow:BrowserWindow): void {   
 
-    ipcMain.on('electron:selectionDossier', (event): void => {
+    ipcMain.on('electron:selectionDossier', (event: IpcMainEvent): void => {
       dialog.showOpenDialog(_mainWindow, {
         properties: ['openDirectory'],
       }).then((result: OpenDialogueReturnValue): void => {
@@ -16,13 +16,8 @@ export default class ipcRepertoire {
       });
     })
 
-    ipcMain.on('load-video', (_, _filePath: string): void => {
-      const fileURL = `file://${path.resolve(_filePath)}`;
-      _mainWindow.webContents.send('load-video', fileURL);
-    });
-
-    ipcMain.on('electron:supprimerElement',(_, _filePath: string): void=>{
-      fs.unlink(_filePath, err => {
+    ipcMain.on('electron:supprimerElement',(_, _url: string): void=>{
+      fs.unlink(_url, err => {
         if (err) {
           console.error('Erreur lors de la suppression du fichier :', err);
         }else{
@@ -31,7 +26,7 @@ export default class ipcRepertoire {
       });
     })
 
-    ipcMain.on('electron:copierElement',(event, _fichierSource: string,_cheminDestination: string): void=>{
+    ipcMain.on('electron:copierElement',(event: IpcMainEvent, _fichierSource: string,_cheminDestination: string): void=>{
 
       fs.copyFile(_fichierSource, _cheminDestination, (err: NodeJS.ErrnoException | null): void => {
         if (err) {
@@ -43,14 +38,14 @@ export default class ipcRepertoire {
       });
     })
 
-    ipcMain.on('electron:recapitulatifRepertoire',(event, _cheminRepertoire:string): void=>{
+    ipcMain.on('electron:recapitulatifRepertoire',(event: IpcMainEvent, _urlRepertoire:string): void=>{
       try {
         // Liste le contenu du dossier
-        const contenu = fs.readdirSync(_cheminRepertoire);
+        const contenu = fs.readdirSync(_urlRepertoire);
       
         // Filtrer les dossiers et les fichiers
         const dossiers: string[] = contenu.filter(element => {
-          const cheminComplet: string = path.join(_cheminRepertoire, element);
+          const cheminComplet: string = path.join(_urlRepertoire, element);
           try {
             // Vérifier si le chemin est un dossier et si on a les permissions pour le lire
             return fs.statSync(cheminComplet).isDirectory() && !element.startsWith('System Volume Information');
@@ -61,7 +56,7 @@ export default class ipcRepertoire {
         });
       
         const fichiers: string[] = contenu.filter(element => {
-          const cheminComplet: string = path.join(_cheminRepertoire, element);
+          const cheminComplet: string = path.join(_urlRepertoire, element);
           try {
             // Vérifier si le chemin est un fichier et si on a les permissions pour le lire
             return fs.statSync(cheminComplet).isFile();

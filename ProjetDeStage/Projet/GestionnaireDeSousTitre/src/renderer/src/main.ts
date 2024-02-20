@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import routes from './class/routes'
+import routes from './router/routes'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 // Vuetify
